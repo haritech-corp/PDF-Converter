@@ -9,6 +9,9 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+<div class="watermark" aria-hidden="true"><span>haritech</span></div>
+
 <div class="container">
 
 <header class="site-header">
@@ -54,8 +57,13 @@
 
 <footer class="site-footer">
   <div class="container">
-    <p data-i18n="footer.privacy">Privasi: semua pemrosesan lokal. Data Anda tidak meninggalkan perangkat.</p>
-    <p><a href="index.html" data-i18n="footer.back">&larr; Kembali</a></p>
+    <div class="footer-left">
+      <p data-i18n="footer.privacy">Privasi: semua pemrosesan lokal.</p>
+      <p><a href="index.html" data-i18n="footer.back">&larr; Kembali</a></p>
+    </div>
+    <div class="footer-right">
+      <p><span class="brand-badge">haritech</span></p>
+    </div>
   </div>
 </footer>
 
@@ -66,62 +74,32 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs
 
 const i18n = {
   id: {
-    'site.title': 'Meja Dokumen',
-    'page.title': 'Kompres PDF — Meja Dokumen',
-    'tool.title': 'Kompres PDF',
-    'tool.desc': 'Perkecil ukuran berkas PDF.',
-    'dropzone.text': 'Seret berkas atau klik untuk memilih',
-    'dropzone.sub': 'Format .pdf',
-    'quality.label': 'Kualitas',
-    'quality.high': 'Tinggi',
-    'quality.balanced': 'Sedang',
-    'quality.low': 'Rendah',
-    'btn.action': 'Kompres',
-    'note': 'Catatan: halaman dikonversi ke gambar. Teks tidak bisa disalin pada hasil kompresi.',
-    'footer.privacy': 'Privasi: semua pemrosesan lokal. Data Anda tidak meninggalkan perangkat.',
-    'footer.back': '← Kembali',
-    'status.progress': 'Memproses {0} — halaman {1} dari {2}...',
-    'status.done': 'Selesai.',
-    'status.empty': '',
-    'btn.up': 'Naik',
-    'btn.down': 'Turun',
-    'btn.remove': 'Hapus',
-    'stamp.label': 'SELESAI',
-    'size.orig': 'Ukuran asli {0} → hasil {1}',
-    'size.saved': '(turun {0}%)',
-    'size.unsaved': '(tidak lebih kecil)',
-    'zip.label': '{0} berkas dalam .zip',
-    'dl.single': 'Unduh {0}',
-    'dl.zip': 'Unduh pdf-terkompresi.zip'
+    'site.title':'Meja Dokumen','page.title':'Kompres PDF — Meja Dokumen',
+    'tool.title':'Kompres PDF','tool.desc':'Perkecil ukuran berkas PDF.',
+    'dropzone.text':'Seret berkas atau klik untuk memilih','dropzone.sub':'Format .pdf',
+    'quality.label':'Kualitas','quality.high':'Tinggi','quality.balanced':'Sedang','quality.low':'Rendah',
+    'btn.action':'Kompres',
+    'note':'Catatan: halaman dikonversi ke gambar. Teks tidak bisa disalin pada hasil kompresi.',
+    'footer.privacy':'Privasi: semua pemrosesan lokal.','footer.back':'← Kembali',
+    'status.progress':'Memproses {0} — halaman {1} dari {2}...','status.done':'Selesai.',
+    'btn.up':'Naik','btn.down':'Turun','btn.remove':'Hapus',
+    'stamp.label':'SELESAI',
+    'size.orig':'Ukuran asli {0} → hasil {1}','size.saved':'(turun {0}%)','size.unsaved':'(tidak lebih kecil)',
+    'zip.label':'{0} berkas dalam .zip','dl.single':'Unduh {0}','dl.zip':'Unduh pdf-terkompresi.zip'
   },
   en: {
-    'site.title': 'Document Desk',
-    'page.title': 'Compress PDF — Document Desk',
-    'tool.title': 'Compress PDF',
-    'tool.desc': 'Reduce PDF file size.',
-    'dropzone.text': 'Drop files or click to select',
-    'dropzone.sub': '.pdf format',
-    'quality.label': 'Quality',
-    'quality.high': 'High',
-    'quality.balanced': 'Balanced',
-    'quality.low': 'Low',
-    'btn.action': 'Compress',
-    'note': 'Note: pages are converted to images. Text will not be selectable.',
-    'footer.privacy': 'Privacy: all processing is local. Your data never leaves your device.',
-    'footer.back': '← Back',
-    'status.progress': 'Processing {0} — page {1} of {2}...',
-    'status.done': 'Done.',
-    'status.empty': '',
-    'btn.up': 'Up',
-    'btn.down': 'Down',
-    'btn.remove': 'Remove',
-    'stamp.label': 'DONE',
-    'size.orig': 'Original {0} → result {1}',
-    'size.saved': '(reduced {0}%)',
-    'size.unsaved': '(not smaller)',
-    'zip.label': '{0} files in .zip',
-    'dl.single': 'Download {0}',
-    'dl.zip': 'Download pdf-compressed.zip'
+    'site.title':'Document Desk','page.title':'Compress PDF — Document Desk',
+    'tool.title':'Compress PDF','tool.desc':'Reduce PDF file size.',
+    'dropzone.text':'Drop files or click to select','dropzone.sub':'.pdf format',
+    'quality.label':'Quality','quality.high':'High','quality.balanced':'Balanced','quality.low':'Low',
+    'btn.action':'Compress',
+    'note':'Note: pages are converted to images. Text will not be selectable.',
+    'footer.privacy':'Privacy: all processing is local.','footer.back':'← Back',
+    'status.progress':'Processing {0} — page {1} of {2}...','status.done':'Done.',
+    'btn.up':'Up','btn.down':'Down','btn.remove':'Remove',
+    'stamp.label':'DONE',
+    'size.orig':'Original {0} → result {1}','size.saved':'(reduced {0}%)','size.unsaved':'(not smaller)',
+    'zip.label':'{0} files in .zip','dl.single':'Download {0}','dl.zip':'Download pdf-compressed.zip'
   }
 };
 var lang = 'id';
@@ -129,33 +107,22 @@ var lang = 'id';
 function t(key) {
   var str = i18n[lang] && i18n[lang][key];
   if (str === undefined) return key;
-  for (var i = 1; i < arguments.length; i++) {
-    str = str.replace('{' + (i - 1) + '}', arguments[i]);
-  }
+  for (var i = 1; i < arguments.length; i++) str = str.replace('{' + (i - 1) + '}', arguments[i]);
   return str;
 }
 
 function setLang(l) {
-  lang = l;
-  document.documentElement.lang = l;
+  lang = l; document.documentElement.lang = l;
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
     var key = el.getAttribute('data-i18n');
-    if (i18n[l] && i18n[l][key] !== undefined) {
-      if (el.tagName === 'OPTION') el.textContent = i18n[l][key];
-      else el.textContent = i18n[l][key];
-    }
+    if (i18n[l] && i18n[l][key] !== undefined) el.textContent = i18n[l][key];
   });
   document.querySelectorAll('.lang-btn').forEach(function(btn) {
     btn.classList.toggle('active', btn.getAttribute('data-lang') === l);
   });
   localStorage.setItem('lang', l);
-  if (typeof refreshFileList === 'function') refreshFileList();
 }
-
-(function() {
-  var saved = localStorage.getItem('lang');
-  if (saved && saved !== 'id') setLang(saved);
-})();
+(function(){ var s = localStorage.getItem('lang'); if (s && s !== 'id') setLang(s); })();
 
 function bytesToSize(bytes) {
   if (bytes === 0) return '0 B';
@@ -163,232 +130,127 @@ function bytesToSize(bytes) {
   var i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), u.length - 1);
   return (bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 2) + ' ' + u[i];
 }
-
 function downloadBlob(blob, name) {
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url; a.download = name;
+  var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = url; a.download = name;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
 }
-
-function setStatus(el, text) {
-  el.textContent = text || '';
-  el.classList.toggle('err', false);
-}
-
-function setError(el, text) {
-  el.textContent = text || '';
-  el.classList.toggle('err', true);
-}
-
-function stripExt(name) {
-  var i = name.lastIndexOf('.');
-  return i > 0 ? name.slice(0, i) : name;
-}
-
+function setStatus(el, text) { el.textContent = text || ''; el.classList.toggle('err', false); }
+function setError(el, text) { el.textContent = text || ''; el.classList.toggle('err', true); }
+function stripExt(name) { var i = name.lastIndexOf('.'); return i > 0 ? name.slice(0, i) : name; }
 function fileKey(f) { return f.name + '_' + f.size + '_' + f.lastModified; }
 
-// --- File list controller ---
-var files = [];
-var listEl = document.getElementById('file-list');
-var runBtn = document.getElementById('run-btn');
+// --- PDF Thumbnail ---
+function loadPdfThumbnail(file, imgEl) {
+  file.arrayBuffer().then(function(buf) {
+    return pdfjsLib.getDocument({ data: buf }).promise;
+  }).then(function(pdf) { return pdf.getPage(1); })
+  .then(function(page) {
+    var vp = page.getViewport({ scale: .3 });
+    var c = document.createElement('canvas');
+    c.width = vp.width; c.height = vp.height;
+    return page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise.then(function(){ return c; });
+  }).then(function(c) { imgEl.src = c.toDataURL(); imgEl.style.display = 'block'; })
+  .catch(function(){ imgEl.style.display = 'none'; });
+}
 
+// --- File list controller ---
+var files = [], listEl = document.getElementById('file-list'), runBtn = document.getElementById('run-btn');
 function renderList() {
   listEl.innerHTML = '';
   files.forEach(function(f, idx) {
     var li = document.createElement('li');
-    var name = document.createElement('span');
-    name.className = 'fname'; name.textContent = f.name;
-    li.appendChild(name);
-    var size = document.createElement('span');
-    size.className = 'fsize'; size.textContent = bytesToSize(f.size);
-    li.appendChild(size);
-    var up = document.createElement('button');
-    up.className = 'move'; up.type = 'button';
-    up.innerHTML = '&uarr;';
-    up.title = t('btn.up');
-    up.disabled = idx === 0;
-    up.addEventListener('click', function() {
-      var t = files[idx - 1]; files[idx - 1] = files[idx]; files[idx] = t;
-      renderList();
-    });
+    var thumb = document.createElement('img');
+    thumb.className = 'thumb'; thumb.alt = ''; thumb.style.display = 'none';
+    li.appendChild(thumb);
+    loadPdfThumbnail(f, thumb);
+    var name = document.createElement('span'); name.className = 'fname'; name.textContent = f.name; li.appendChild(name);
+    var size = document.createElement('span'); size.className = 'fsize'; size.textContent = bytesToSize(f.size); li.appendChild(size);
+    var up = document.createElement('button'); up.className = 'move'; up.type = 'button'; up.innerHTML = '&uarr;'; up.disabled = idx === 0;
+    up.addEventListener('click', function(){ var t = files[idx-1]; files[idx-1] = files[idx]; files[idx] = t; renderList(); });
     li.appendChild(up);
-    var down = document.createElement('button');
-    down.className = 'move'; down.type = 'button';
-    down.innerHTML = '&darr;';
-    down.title = t('btn.down');
-    down.disabled = idx === files.length - 1;
-    down.addEventListener('click', function() {
-      var t = files[idx + 1]; files[idx + 1] = files[idx]; files[idx] = t;
-      renderList();
-    });
-    li.appendChild(down);
-    var rm = document.createElement('button');
-    rm.type = 'button'; rm.innerHTML = '&times;';
-    rm.title = t('btn.remove');
-    rm.addEventListener('click', function() {
-      files.splice(idx, 1);
-      renderList();
-    });
+    var dn = document.createElement('button'); dn.className = 'move'; dn.type = 'button'; dn.innerHTML = '&darr;'; dn.disabled = idx === files.length - 1;
+    dn.addEventListener('click', function(){ var t = files[idx+1]; files[idx+1] = files[idx]; files[idx] = t; renderList(); });
+    li.appendChild(dn);
+    var rm = document.createElement('button'); rm.type = 'button'; rm.innerHTML = '&times;';
+    rm.addEventListener('click', function(){ files.splice(idx, 1); renderList(); });
     li.appendChild(rm);
     listEl.appendChild(li);
   });
   runBtn.disabled = files.length < 1;
 }
 
-function refreshFileList() {
-  renderList();
-}
-
-// --- Dropzone ---
-var dropEl = document.getElementById('dropzone');
-var inputEl = document.getElementById('file-input');
-
+var dropEl = document.getElementById('dropzone'), inputEl = document.getElementById('file-input');
 dropEl.addEventListener('click', function(){ inputEl.click(); });
-dropEl.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputEl.click(); }
-});
-inputEl.addEventListener('change', function() {
-  addFiles(inputEl.files);
-  inputEl.value = '';
-});
-['dragenter','dragover'].forEach(function(ev) {
-  dropEl.addEventListener(ev, function(e) {
-    e.preventDefault(); e.stopPropagation();
-    dropEl.classList.add('dragover');
-  });
-});
-['dragleave','drop'].forEach(function(ev) {
-  dropEl.addEventListener(ev, function(e) {
-    e.preventDefault(); e.stopPropagation();
-    dropEl.classList.remove('dragover');
-  });
-});
-dropEl.addEventListener('drop', function(e) {
-  var dt = e.dataTransfer;
-  if (dt && dt.files && dt.files.length) addFiles(dt.files);
-});
+dropEl.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputEl.click(); } });
+inputEl.addEventListener('change', function() { addFiles(inputEl.files); inputEl.value = ''; });
+['dragenter','dragover'].forEach(function(ev) { dropEl.addEventListener(ev, function(e) { e.preventDefault(); e.stopPropagation(); dropEl.classList.add('dragover'); }); });
+['dragleave','drop'].forEach(function(ev) { dropEl.addEventListener(ev, function(e) { e.preventDefault(); e.stopPropagation(); dropEl.classList.remove('dragover'); }); });
+dropEl.addEventListener('drop', function(e) { var dt = e.dataTransfer; if (dt && dt.files && dt.files.length) addFiles(dt.files); });
 
 function addFiles(fl) {
-  var seen = {};
-  files.forEach(function(f){ seen[fileKey(f)] = true; });
-  Array.prototype.forEach.call(fl, function(f) {
-    if (!seen[fileKey(f)]) {
-      files.push(f);
-      seen[fileKey(f)] = true;
-    }
-  });
+  var seen = {}; files.forEach(function(f){ seen[fileKey(f)] = true; });
+  Array.prototype.forEach.call(fl, function(f) { if (!seen[fileKey(f)]) { files.push(f); seen[fileKey(f)] = true; } });
   renderList();
 }
 
 // --- Compress ---
-var statusEl = document.getElementById('status');
-var resultEl = document.getElementById('result');
-var qualitySel = document.getElementById('quality');
-
+var statusEl = document.getElementById('status'), resultEl = document.getElementById('result'), qualitySel = document.getElementById('quality');
 var PRESETS = {
   high:     { renderScale: 1.0, jpegQuality: 0.35 },
   balanced: { renderScale: 1.5, jpegQuality: 0.60 },
   low:      { renderScale: 2.0, jpegQuality: 0.80 }
 };
-
 function stampResult(el, label) {
-  var s = document.createElement('div');
-  s.className = 'stamp';
+  var s = document.createElement('div'); s.className = 'stamp';
   s.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ' + label;
   el.appendChild(s);
 }
-
 function addDownloadRow(el, blob, filename, note) {
-  var row = document.createElement('div');
-  row.className = 'result-row';
-  var a = document.createElement('a');
-  a.className = 'dl-link';
-  a.href = '#';
+  var row = document.createElement('div'); row.className = 'result-row';
+  var a = document.createElement('a'); a.className = 'dl-link'; a.href = '#';
   a.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> ' + t('dl.single', filename);
-  a.addEventListener('click', function(e) {
-    e.preventDefault();
-    downloadBlob(blob, filename);
-  });
+  a.addEventListener('click', function(e) { e.preventDefault(); downloadBlob(blob, filename); });
   row.appendChild(a);
-  if (note) {
-    var n = document.createElement('span');
-    n.className = 'size-note'; n.textContent = note;
-    row.appendChild(n);
-  }
+  if (note) { var n = document.createElement('span'); n.className = 'size-note'; n.textContent = note; row.appendChild(n); }
   el.appendChild(row);
 }
-
 async function compressOne(file, preset) {
-  var buf = await file.arrayBuffer();
-  var pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-  var doc = null;
+  var buf = await file.arrayBuffer(); var pdf = await pdfjsLib.getDocument({ data: buf }).promise; var doc = null;
   for (var i = 1; i <= pdf.numPages; i++) {
     setStatus(statusEl, t('status.progress', file.name, i, pdf.numPages));
-    var page = await pdf.getPage(i);
-    var bv = page.getViewport({ scale: 1 });
-    var rv = page.getViewport({ scale: preset.renderScale });
-    var c = document.createElement('canvas');
-    c.width = rv.width; c.height = rv.height;
-    var ctx = c.getContext('2d');
+    var page = await pdf.getPage(i); var bv = page.getViewport({ scale: 1 }); var rv = page.getViewport({ scale: preset.renderScale });
+    var c = document.createElement('canvas'); c.width = rv.width; c.height = rv.height; var ctx = c.getContext('2d');
     await page.render({ canvasContext: ctx, viewport: rv }).promise;
-    var du = c.toDataURL('image/jpeg', preset.jpegQuality);
-    var ori = bv.width > bv.height ? 'l' : 'p';
+    var du = c.toDataURL('image/jpeg', preset.jpegQuality); var ori = bv.width > bv.height ? 'l' : 'p';
     if (!doc) doc = new jspdf.jsPDF({ orientation: ori, unit: 'pt', format: [bv.width, bv.height] });
     else doc.addPage([bv.width, bv.height], ori);
     doc.addImage(du, 'JPEG', 0, 0, bv.width, bv.height);
   }
   return doc.output('blob');
 }
-
 runBtn.addEventListener('click', async function() {
-  var fl = files.slice();
-  if (!fl.length) return;
-  runBtn.disabled = true;
-  resultEl.innerHTML = '';
-  var preset = PRESETS[qualitySel.value];
+  var fl = files.slice(); if (!fl.length) return;
+  runBtn.disabled = true; resultEl.innerHTML = ''; var preset = PRESETS[qualitySel.value];
   try {
     var outputs = [];
-    for (var i = 0; i < fl.length; i++) {
-      var blob = await compressOne(fl[i], preset);
-      outputs.push({ name: stripExt(fl[i].name) + '-kompres.pdf', blob: blob, originalSize: fl[i].size });
-    }
-    setStatus(statusEl, t('status.done'));
-    stampResult(resultEl, t('stamp.label'));
-
+    for (var i = 0; i < fl.length; i++) { var blob = await compressOne(fl[i], preset); outputs.push({ name: stripExt(fl[i].name) + '-kompres.pdf', blob: blob, originalSize: fl[i].size }); }
+    setStatus(statusEl, t('status.done')); stampResult(resultEl, t('stamp.label'));
     if (outputs.length === 1) {
-      var o = outputs[0];
-      var pct = Math.round((1 - o.blob.size / o.originalSize) * 100);
-      var note = t('size.orig', bytesToSize(o.originalSize), bytesToSize(o.blob.size)) + ' ' +
-        (pct > 0 ? t('size.saved', pct) : t('size.unsaved'));
+      var o = outputs[0]; var pct = Math.round((1 - o.blob.size / o.originalSize) * 100);
+      var note = t('size.orig', bytesToSize(o.originalSize), bytesToSize(o.blob.size)) + ' ' + (pct > 0 ? t('size.saved', pct) : t('size.unsaved'));
       addDownloadRow(resultEl, o.blob, o.name, note);
     } else {
-      var zip = new JSZip();
-      outputs.forEach(function(o){ zip.file(o.name, o.blob); });
-      var zipBlob = await zip.generateAsync({ type: 'blob' });
-      var row = document.createElement('div');
-      row.className = 'result-row';
-      var a = document.createElement('a');
-      a.className = 'dl-link';
-      a.href = '#';
+      var zip = new JSZip(); outputs.forEach(function(o){ zip.file(o.name, o.blob); }); var zipBlob = await zip.generateAsync({ type: 'blob' });
+      var row = document.createElement('div'); row.className = 'result-row';
+      var a = document.createElement('a'); a.className = 'dl-link'; a.href = '#';
       a.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> ' + t('dl.zip');
-      a.addEventListener('click', function(e) {
-        e.preventDefault();
-        downloadBlob(zipBlob, 'pdf-terkompresi.zip');
-      });
-      row.appendChild(a);
-      var n = document.createElement('span');
-      n.className = 'size-note'; n.textContent = t('zip.label', outputs.length);
-      row.appendChild(n);
+      a.addEventListener('click', function(e){ e.preventDefault(); downloadBlob(zipBlob, 'pdf-terkompresi.zip'); }); row.appendChild(a);
+      var n = document.createElement('span'); n.className = 'size-note'; n.textContent = t('zip.label', outputs.length); row.appendChild(n);
       resultEl.appendChild(row);
     }
-  } catch (err) {
-    console.error(err);
-    setError(statusEl, err.message);
-  } finally {
-    runBtn.disabled = false;
-  }
+  } catch (err) { console.error(err); setError(statusEl, err.message); }
+  finally { runBtn.disabled = false; }
 });
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>

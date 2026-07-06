@@ -9,6 +9,9 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+<div class="watermark" aria-hidden="true"><span>haritech</span></div>
+
 <div class="container">
 
 <header class="site-header">
@@ -19,7 +22,8 @@
   </div>
 </header>
 
-<div class="page-title">
+<div class="hero">
+  <svg class="hero-decor" width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 2L25 12L36 14L28 22L30 34L20 28L10 34L12 22L4 14L15 12Z"/></svg>
   <h1 data-i18n="page.title">Meja Dokumen</h1>
   <p data-i18n="page.desc">Alat PDF yang berjalan di peramban Anda. Tidak ada data yang dikirim ke server.</p>
 </div>
@@ -65,8 +69,12 @@
 
 <footer class="site-footer">
   <div class="container">
-    <p data-i18n="footer.privacy">Privasi: semua pemrosesan lokal. Data Anda tidak meninggalkan perangkat.</p>
-    <p data-i18n="footer.credit">HTML mandiri &middot; Buka di peramban modern.</p>
+    <div class="footer-left">
+      <p data-i18n="footer.privacy">Privasi: semua pemrosesan lokal.</p>
+    </div>
+    <div class="footer-right">
+      <p><span class="brand-badge">haritech</span></p>
+    </div>
   </div>
 </footer>
 
@@ -86,8 +94,7 @@ const i18n = {
     'tool4.desc': 'Gabungkan beberapa PDF.',
     'tool5.name': 'PDF → Gambar',
     'tool5.desc': 'Ekstrak halaman sebagai PNG.',
-    'footer.privacy': 'Privasi: semua pemrosesan lokal. Data Anda tidak meninggalkan perangkat.',
-    'footer.credit': 'HTML mandiri · Buka di peramban modern.'
+    'footer.privacy': 'Privasi: semua pemrosesan lokal.'
   },
   en: {
     'site.title': 'Document Desk',
@@ -103,8 +110,7 @@ const i18n = {
     'tool4.desc': 'Combine multiple PDFs.',
     'tool5.name': 'PDF → Image',
     'tool5.desc': 'Extract pages as PNG.',
-    'footer.privacy': 'Privacy: all processing is local. Your data never leaves your device.',
-    'footer.credit': 'Single HTML file · Open in a modern browser.'
+    'footer.privacy': 'Privacy: all processing is local.'
   }
 };
 
