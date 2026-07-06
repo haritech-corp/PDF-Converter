@@ -3,505 +3,645 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meja Dokumen — Alat PDF</title>
+<title>Meja Dokumen — Alat PDF Online</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --ink:#1B2A41;
-    --ink-soft:#3A4C63;
-    --paper:#F6F2E7;
-    --paper-alt:#ECE4CE;
-    --teal:#1F7A6C;
-    --teal-dark:#155C52;
-    --red:#B23A2E;
-    --slate:#5B6472;
-    --line:#D9CFB0;
-    --font-display:'Space Grotesk',sans-serif;
-    --font-body:'Inter',sans-serif;
-    --font-mono:'IBM Plex Mono',monospace;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:var(--paper);
-    background-image:
-      radial-gradient(circle, rgba(27,42,65,0.05) 1px, transparent 1px);
-    background-size:22px 22px;
-    color:var(--ink);
-    font-family:var(--font-body);
-    line-height:1.5;
-    -webkit-font-smoothing:antialiased;
-  }
-  a{color:var(--teal-dark);}
-  .wrap{max-width:780px;margin:0 auto;padding:0 20px 80px;}
+:root{
+  /* Colors */
+  --primary:#4F46E5;
+  --primary-light:#EEF2FF;
+  --primary-dark:#4338CA;
+  --accent:#0D9488;
 
-  /* ===== Masthead ===== */
-  header.masthead{
-    border-bottom:3px double var(--ink);
-    padding:36px 0 18px;
-    margin-bottom:28px;
-    position:relative;
-  }
-  header.masthead .top-rule{
-    border-top:1px solid var(--ink);
-    margin-bottom:10px;
-  }
-  header.masthead h1{
-    font-family:var(--font-display);
-    font-weight:700;
-    font-size:2.1rem;
-    letter-spacing:0.5px;
-    margin:0 0 6px;
-    display:flex;
-    align-items:center;
-    gap:14px;
-  }
-  header.masthead .seal{
-    flex-shrink:0;
-    width:46px;height:46px;
-  }
-  header.masthead p.tagline{
-    margin:0;
-    font-size:0.95rem;
-    color:var(--slate);
-    font-family:var(--font-mono);
-    letter-spacing:0.2px;
-  }
-  .intro{
-    font-size:0.98rem;
-    color:var(--ink-soft);
-    margin-bottom:30px;
-  }
-  .intro strong{color:var(--ink);}
+  --bg:#F8FAFC;
+  --surface:#fff;
+  --text:#0F172A;
+  --text-secondary:#64748B;
+  --text-muted:#94A3B8;
+  --border:#E2E8F0;
+  --line:var(--border);
 
-  /* ===== Tool cards (accordion) ===== */
-  details.tool-card{
-    background:#fff;
-    border:1px solid var(--line);
-    border-radius:3px;
-    margin-bottom:14px;
-    box-shadow:0 1px 0 rgba(27,42,65,0.04);
-    overflow:hidden;
-  }
-  details.tool-card[open]{
-    box-shadow:0 6px 18px rgba(27,42,65,0.08);
-  }
-  details.tool-card summary{
-    list-style:none;
-    cursor:pointer;
-    padding:18px 20px;
-    display:flex;
-    align-items:center;
-    gap:16px;
-    user-select:none;
-  }
-  details.tool-card summary::-webkit-details-marker{display:none;}
-  .tool-index{
-    font-family:var(--font-mono);
-    font-size:0.85rem;
-    color:var(--teal-dark);
-    background:var(--paper-alt);
-    border:1px solid var(--line);
-    border-radius:50%;
-    width:34px;height:34px;
-    flex-shrink:0;
-    display:flex;align-items:center;justify-content:center;
-  }
-  .tool-title{flex:1;}
-  .tool-title h2{
-    font-family:var(--font-display);
-    font-size:1.08rem;
-    margin:0 0 2px;
-  }
-  .tool-title p{
-    margin:0;
-    font-size:0.85rem;
-    color:var(--slate);
-  }
-  .chevron{
-    width:20px;height:20px;
-    flex-shrink:0;
-    transition:transform 0.25s ease;
-    color:var(--ink-soft);
-  }
-  details.tool-card[open] .chevron{transform:rotate(180deg);}
-  .tool-body{
-    padding:0 20px 22px;
-    border-top:1px dashed var(--line);
-    padding-top:18px;
-  }
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.05);
+  --shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:0 4px 6px -1px rgba(0,0,0,0.07),0 2px 4px -1px rgba(0,0,0,0.04);
+  --shadow-lg:0 10px 25px -5px rgba(0,0,0,0.08),0 4px 10px -5px rgba(0,0,0,0.04);
 
-  /* ===== Dropzone ===== */
-  .dropzone{
-    border:2px dashed var(--line);
-    border-radius:4px;
-    background:var(--paper-alt);
-    padding:26px 16px;
-    text-align:center;
-    cursor:pointer;
-    transition:border-color 0.15s ease, background 0.15s ease;
-  }
-  .dropzone.dragover{
-    border-color:var(--teal);
-    background:#fff;
-  }
-  .dropzone .dz-title{
-    font-family:var(--font-display);
-    font-weight:700;
-    font-size:0.95rem;
-  }
-  .dropzone .dz-sub{
-    font-size:0.8rem;
-    color:var(--slate);
-    margin-top:4px;
-  }
-  .dropzone input[type=file]{display:none;}
+  --red:#EF4444;
+  --teal:var(--accent);
 
-  /* ===== File list ===== */
-  ul.file-list{
-    list-style:none;
-    margin:14px 0 0;
-    padding:0;
-  }
-  ul.file-list li{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:8px 10px;
-    border:1px solid var(--line);
-    border-radius:3px;
-    background:#fff;
-    margin-bottom:6px;
-    font-size:0.85rem;
-  }
-  ul.file-list .fname{
-    flex:1;
-    font-family:var(--font-mono);
-    font-size:0.8rem;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-  }
-  ul.file-list .fsize{
-    font-family:var(--font-mono);
-    font-size:0.75rem;
-    color:var(--slate);
-    flex-shrink:0;
-  }
-  ul.file-list button{
-    border:none;
-    background:none;
-    cursor:pointer;
-    color:var(--slate);
-    font-size:0.9rem;
-    padding:2px 5px;
-    line-height:1;
-  }
-  ul.file-list button:hover{color:var(--red);}
-  ul.file-list button.move:hover{color:var(--teal-dark);}
+  --radius-sm:6px;
+  --radius:8px;
+  --radius-lg:12px;
+  --radius-xl:16px;
 
-  /* ===== Options row ===== */
-  .options-row{
-    display:flex;
-    flex-wrap:wrap;
-    gap:14px;
-    margin-top:16px;
-    align-items:flex-end;
-  }
-  .field{display:flex;flex-direction:column;gap:5px;}
-  .field label{
-    font-size:0.78rem;
-    font-family:var(--font-mono);
-    color:var(--ink-soft);
-    text-transform:uppercase;
-    letter-spacing:0.4px;
-  }
-  .field select{
-    font-family:var(--font-body);
-    font-size:0.88rem;
-    padding:7px 10px;
-    border:1px solid var(--line);
-    border-radius:3px;
-    background:#fff;
-    color:var(--ink);
-  }
+  --font-display:'Space Grotesk',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'IBM Plex Mono',monospace;
+}
 
-  /* ===== Button ===== */
-  .btn{
-    font-family:var(--font-display);
-    font-weight:700;
-    font-size:0.92rem;
-    letter-spacing:0.3px;
-    color:#fff;
-    background:var(--teal);
-    border:none;
-    border-radius:3px;
-    padding:10px 20px;
-    cursor:pointer;
-    box-shadow:inset 0 -3px 0 rgba(0,0,0,0.15);
-    transition:background 0.15s ease, transform 0.1s ease;
-  }
-  .btn:hover:not(:disabled){background:var(--teal-dark);}
-  .btn:active:not(:disabled){transform:translateY(1px);box-shadow:inset 0 -1px 0 rgba(0,0,0,0.15);}
-  .btn:disabled{background:#B9C0C6;cursor:not-allowed;box-shadow:none;}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--primary);text-decoration:none;}
+a:hover{text-decoration:underline;}
 
-  /* ===== Status / result ===== */
-  .status{
-    margin-top:12px;
-    font-family:var(--font-mono);
-    font-size:0.8rem;
-    color:var(--slate);
-    min-height:1.2em;
-    white-space:pre-wrap;
-  }
-  .status.err{color:var(--red);}
-  .result{margin-top:14px;}
-  .result-row{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    flex-wrap:wrap;
-  }
-  .dl-link{
-    display:inline-block;
-    background:var(--ink);
-    color:#fff !important;
-    text-decoration:none;
-    font-family:var(--font-mono);
-    font-size:0.82rem;
-    padding:8px 14px;
-    border-radius:3px;
-  }
-  .dl-link:hover{background:var(--ink-soft);}
-  .size-note{font-size:0.78rem;color:var(--slate);font-family:var(--font-mono);}
+.container{
+  max-width:1280px;
+  margin:0 auto;
+  padding:0 32px;
+}
 
-  /* ===== Stamp ===== */
-  .stamp{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    padding:8px 16px;
-    border:3px double var(--red);
-    border-radius:50%/42%;
-    color:var(--red);
-    font-family:var(--font-display);
-    font-weight:700;
-    font-size:0.85rem;
-    letter-spacing:2px;
-    transform:rotate(-7deg) scale(0.6);
-    opacity:0;
-    animation:stampIn 0.35s cubic-bezier(.2,1.4,.5,1) forwards;
-  }
-  @keyframes stampIn{
-    to{transform:rotate(-7deg) scale(1);opacity:0.88;}
-  }
+/* ===== Hero ===== */
+.hero{
+  background:linear-gradient(135deg,#4F46E5 0%,#0D9488 100%);
+  padding:52px 0 48px;
+  color:#fff;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background-image:radial-gradient(circle at 25% 40%,rgba(255,255,255,0.07) 1px,transparent 1px);
+  background-size:28px 28px;
+  pointer-events:none;
+}
+.hero .container{position:relative;z-index:1;text-align:center;}
+.hero-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:0.72rem;
+  font-family:var(--font-mono);
+  letter-spacing:0.5px;
+  text-transform:uppercase;
+  background:rgba(255,255,255,0.12);
+  backdrop-filter:blur(4px);
+  padding:4px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,0.15);
+  margin-bottom:16px;
+}
+.hero h1{
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:3.2rem;
+  margin:0 0 10px;
+  letter-spacing:-0.5px;
+  line-height:1.1;
+}
+.hero p{
+  font-size:1.08rem;
+  color:rgba(255,255,255,0.85);
+  max-width:640px;
+  margin:0 auto 22px;
+}
+.hero-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:center;
+  margin-top:4px;
+}
+.hero-tag{
+  background:rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.18);
+  color:#fff;
+  padding:6px 16px;
+  border-radius:999px;
+  font-size:0.82rem;
+  font-weight:500;
+  cursor:pointer;
+  transition:background 0.2s,transform 0.15s;
+}
+.hero-tag:hover{background:rgba(255,255,255,0.22);transform:translateY(-1px);}
 
-  footer{
-    margin-top:34px;
-    padding-top:18px;
-    border-top:1px solid var(--line);
-    font-size:0.8rem;
-    color:var(--slate);
-  }
-  footer p{margin:0 0 8px;}
+/* ===== Tools Section ===== */
+.tools-section{
+  padding:40px 0 64px;
+}
+.tools-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+#card-p2i{grid-column:1/-1;}
 
-  @media (max-width:520px){
-    header.masthead h1{font-size:1.6rem;}
-    .options-row{flex-direction:column;align-items:stretch;}
-  }
+/* ===== Tool Card ===== */
+.tool-card{
+  background:var(--surface);
+  border-radius:var(--radius-lg);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  transition:box-shadow 0.25s ease;
+  position:relative;
+}
+.tool-card::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:4px;
+  background:var(--card-color,var(--primary));
+  border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+  z-index:1;
+}
+.tool-card:hover{box-shadow:var(--shadow-md);}
+.tool-card[open]{box-shadow:var(--shadow-lg);}
 
-  @media (prefers-reduced-motion:reduce){
-    .stamp{animation:none;opacity:0.88;transform:rotate(-7deg) scale(1);}
-    .chevron{transition:none;}
-  }
+.tool-card summary{
+  list-style:none;
+  cursor:pointer;
+  padding:18px 24px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  user-select:none;
+  position:relative;
+  z-index:2;
+}
+.tool-card summary::-webkit-details-marker{display:none;}
+
+.tool-indicator{
+  width:40px;height:40px;
+  border-radius:10px;
+  background:var(--card-color,var(--primary));
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:0.85rem;
+  flex-shrink:0;
+}
+.tool-info{flex:1;min-width:0;}
+.tool-info h2{
+  font-family:var(--font-display);
+  font-size:1.08rem;
+  font-weight:700;
+  margin:0 0 2px;
+  color:var(--text);
+}
+.tool-info p{
+  margin:0;
+  font-size:0.85rem;
+  color:var(--text-secondary);
+  line-height:1.4;
+}
+.chevron{
+  width:20px;height:20px;
+  flex-shrink:0;
+  color:var(--text-muted);
+  transition:transform 0.3s ease;
+}
+.tool-card[open] .chevron{transform:rotate(180deg);}
+
+/* ===== Tool Body (expandable) ===== */
+.tool-body{
+  overflow:hidden;
+  max-height:0;
+  opacity:0;
+  border-top:1px solid var(--border);
+  transition:max-height 0.35s ease,opacity 0.25s ease,padding-top 0.25s ease,padding-bottom 0.25s ease;
+  padding:0 24px;
+}
+.tool-card[open] .tool-body{
+  max-height:2000px;
+  opacity:1;
+  padding:20px 24px 24px;
+}
+
+/* ===== Dropzone ===== */
+.dropzone{
+  border:2px dashed var(--border);
+  border-radius:var(--radius);
+  background:var(--bg);
+  padding:32px 20px;
+  text-align:center;
+  cursor:pointer;
+  transition:border-color 0.2s ease,background 0.2s ease;
+}
+.dropzone.dragover{
+  border-color:var(--primary);
+  border-style:solid;
+  background:var(--primary-light);
+}
+.dropzone .dz-icon{
+  width:40px;height:40px;
+  margin:0 auto 10px;
+  color:var(--text-muted);
+}
+.dropzone.dragover .dz-icon{color:var(--primary);}
+.dropzone .dz-title{
+  font-weight:600;
+  font-size:0.92rem;
+  color:var(--text);
+}
+.dropzone .dz-sub{
+  font-size:0.8rem;
+  color:var(--text-secondary);
+  margin-top:3px;
+}
+.dropzone input[type=file]{display:none;}
+
+/* ===== File List ===== */
+ul.file-list{
+  list-style:none;
+  margin:14px 0 0;
+  padding:0;
+}
+ul.file-list li{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 12px;
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  background:var(--bg);
+  margin-bottom:6px;
+  font-size:0.85rem;
+}
+ul.file-list .fname{
+  flex:1;
+  font-family:var(--font-mono);
+  font-size:0.8rem;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:var(--text);
+}
+ul.file-list .fsize{
+  font-family:var(--font-mono);
+  font-size:0.75rem;
+  color:var(--text-muted);
+  flex-shrink:0;
+}
+ul.file-list button{
+  border:none;
+  background:none;
+  cursor:pointer;
+  color:var(--text-muted);
+  font-size:0.9rem;
+  padding:2px 5px;
+  line-height:1;
+  transition:color 0.15s;
+}
+ul.file-list button:hover{color:var(--red);}
+ul.file-list button.move:hover{color:var(--primary);}
+
+/* ===== Options ===== */
+.options-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-top:16px;
+  align-items:flex-end;
+}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field label{
+  font-size:0.72rem;
+  font-family:var(--font-mono);
+  color:var(--text-secondary);
+  text-transform:uppercase;
+  letter-spacing:0.4px;
+}
+.field select{
+  font-family:var(--font-body);
+  font-size:0.85rem;
+  padding:7px 10px;
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  background:var(--surface);
+  color:var(--text);
+  outline:none;
+  transition:border-color 0.15s;
+}
+.field select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,0.1);}
+
+/* ===== Button ===== */
+.btn{
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:0.88rem;
+  letter-spacing:0.2px;
+  color:#fff;
+  background:var(--primary);
+  border:none;
+  border-radius:var(--radius);
+  padding:10px 24px;
+  cursor:pointer;
+  transition:background 0.2s,transform 0.1s,box-shadow 0.2s;
+  white-space:nowrap;
+}
+.btn:hover:not(:disabled){background:var(--primary-dark);}
+.btn:active:not(:disabled){transform:translateY(1px);}
+.btn:disabled{background:var(--text-muted);cursor:not-allowed;}
+
+/* ===== Status / Result ===== */
+.status{
+  margin-top:12px;
+  font-family:var(--font-mono);
+  font-size:0.8rem;
+  color:var(--text-secondary);
+  min-height:1.2em;
+  white-space:pre-wrap;
+}
+.status.err{color:var(--red);}
+.result{margin-top:14px;}
+.result-row{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.dl-link{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:var(--text);
+  color:#fff !important;
+  text-decoration:none;
+  font-family:var(--font-mono);
+  font-size:0.82rem;
+  padding:8px 16px;
+  border-radius:var(--radius);
+  transition:background 0.2s;
+}
+.dl-link:hover{background:var(--text-secondary);text-decoration:none;}
+.size-note{
+  font-size:0.78rem;
+  color:var(--text-muted);
+  font-family:var(--font-mono);
+}
+
+/* ===== Stamp ===== */
+.stamp{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 16px 6px 12px;
+  border-radius:999px;
+  background:#ECFDF5;
+  color:#059669;
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:0.82rem;
+  letter-spacing:0.3px;
+  margin-top:8px;
+  border:1px solid #A7F3D0;
+}
+
+/* ===== Footer ===== */
+.footer{
+  border-top:1px solid var(--border);
+  padding:28px 0 36px;
+  font-size:0.82rem;
+  color:var(--text-secondary);
+}
+.footer .container{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  gap:12px;
+}
+.footer p{margin:0;}
+.footer strong{color:var(--text);}
+
+/* ===== Responsive ===== */
+@media (max-width:900px){
+  .tools-grid{grid-template-columns:1fr;}
+  #card-p2i{grid-column:auto;}
+  .hero h1{font-size:2.4rem;}
+}
+@media (max-width:640px){
+  .container{padding:0 16px;}
+  .hero{padding:36px 0 32px;}
+  .hero h1{font-size:1.8rem;}
+  .hero p{font-size:0.92rem;}
+  .tools-section{padding:24px 0 40px;}
+  .tool-card summary{padding:14px 16px;}
+  .tool-card .tool-body{padding:0 16px;}
+  .tool-card[open] .tool-body{padding:16px;}
+  .options-row{flex-direction:column;align-items:stretch;}
+  .footer .container{flex-direction:column;text-align:center;}
+}
+@media (prefers-reduced-motion:reduce){
+  .tool-body{transition:none;}
+  .chevron{transition:none;}
+  .hero-tag{transition:none;}
+  .tool-card,.btn,.dropzone{transition:none;}
+}
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <header class="masthead">
-    <div class="top-rule"></div>
-    <h1>
-      <svg class="seal" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="24" cy="24" r="21" stroke="#1B2A41" stroke-width="2"/>
-        <circle cx="24" cy="24" r="15" stroke="#1F7A6C" stroke-width="1.4" stroke-dasharray="3 3"/>
-        <path d="M17 24l5 5 9-10" stroke="#1B2A41" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Meja Dokumen
-    </h1>
-    <p class="tagline">alat PDF · diproses 100% di peramban Anda</p>
-  </header>
+<!-- ===== Hero ===== -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-badge">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      100% offline &middot; client-side
+    </div>
+    <h1>Meja Dokumen</h1>
+    <p>Lima alat PDF untuk pekerjaan sehari-hari — kompres, konversi, gabung, dan ekstrak. Semua diproses langsung di peramban Anda, tanpa upload ke server.</p>
+    <div class="hero-tags">
+      <button class="hero-tag" data-tool="card-compress">Kompres PDF</button>
+      <button class="hero-tag" data-tool="card-word">Word &rarr; PDF</button>
+      <button class="hero-tag" data-tool="card-png">Gambar &rarr; PDF</button>
+      <button class="hero-tag" data-tool="card-merge">Gabung PDF</button>
+      <button class="hero-tag" data-tool="card-p2i">PDF &rarr; Gambar</button>
+    </div>
+  </div>
+</header>
 
-  <p class="intro">
-    Lima alat untuk berkas PDF sehari-hari: <strong>kompres</strong>, <strong>Word ke PDF</strong>,
-    <strong>gambar ke PDF</strong>, <strong>gabung PDF</strong>, dan <strong>PDF ke gambar</strong>.
-    Semua pemrosesan berjalan langsung di perangkat Anda — tidak ada berkas yang diunggah ke server mana pun.
-  </p>
+<!-- ===== Tools ===== -->
+<section class="tools-section">
+  <div class="container">
+    <div class="tools-grid">
 
-  <!-- ============ 1. KOMPRES PDF ============ -->
-  <details class="tool-card" id="card-compress">
-    <summary>
-      <span class="tool-index">01</span>
-      <span class="tool-title">
-        <h2>Kompres PDF</h2>
-        <p>Perkecil ukuran berkas PDF dengan menata ulang halaman sebagai gambar terkompresi.</p>
-      </span>
-      <svg class="chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </summary>
-    <div class="tool-body">
-      <div class="dropzone" id="compress-drop" tabindex="0" role="button" aria-label="Pilih berkas PDF untuk dikompres">
-        <div class="dz-title">Seret berkas PDF ke sini, atau klik untuk memilih</div>
-        <div class="dz-sub">Bisa lebih dari satu berkas · format .pdf</div>
-        <input type="file" id="compress-file" accept="application/pdf" multiple>
-      </div>
-      <ul class="file-list" id="compress-list"></ul>
-      <div class="options-row">
-        <div class="field">
-          <label for="compress-quality">Tingkat kompresi</label>
-          <select id="compress-quality">
-            <option value="high">Tinggi (ukuran terkecil)</option>
-            <option value="balanced" selected>Seimbang</option>
-            <option value="quality">Rendah (kualitas terbaik)</option>
-          </select>
+      <!-- 01. KOMPRES PDF -->
+      <details class="tool-card" id="card-compress" style="--card-color:#4F46E5">
+        <summary>
+          <span class="tool-indicator">01</span>
+          <span class="tool-info">
+            <h2>Kompres PDF</h2>
+            <p>Perkecil ukuran berkas PDF dengan menata ulang halaman sebagai gambar terkompresi.</p>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </summary>
+        <div class="tool-body">
+          <div class="dropzone" id="compress-drop" tabindex="0" role="button" aria-label="Pilih berkas PDF untuk dikompres">
+            <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div class="dz-title">Seret berkas PDF ke sini, atau klik untuk memilih</div>
+            <div class="dz-sub">Bisa lebih dari satu berkas &middot; format .pdf</div>
+            <input type="file" id="compress-file" accept="application/pdf" multiple>
+          </div>
+          <ul class="file-list" id="compress-list"></ul>
+          <div class="options-row">
+            <div class="field">
+              <label for="compress-quality">Tingkat kompresi</label>
+              <select id="compress-quality">
+                <option value="high">Tinggi (ukuran terkecil)</option>
+                <option value="balanced" selected>Seimbang</option>
+                <option value="quality">Rendah (kualitas terbaik)</option>
+              </select>
+            </div>
+            <button class="btn" id="compress-run" disabled>Kompres PDF</button>
+          </div>
+          <div class="status" id="compress-status"></div>
+          <div class="result" id="compress-result"></div>
+          <p class="size-note">Catatan: berkas dirender ulang sebagai gambar per halaman, jadi paling efektif untuk PDF hasil pindaian atau berisi banyak gambar. Teks tidak lagi bisa disalin pada hasil kompresi.</p>
         </div>
-        <button class="btn" id="compress-run" disabled>Kompres PDF</button>
-      </div>
-      <div class="status" id="compress-status"></div>
-      <div class="result" id="compress-result"></div>
-      <p class="size-note">Catatan: berkas dirender ulang sebagai gambar per halaman, jadi paling efektif untuk PDF hasil pindaian atau berisi banyak gambar. Teks tidak lagi bisa disalin pada hasil kompresi.</p>
-    </div>
-  </details>
+      </details>
 
-  <!-- ============ 2. WORD KE PDF ============ -->
-  <details class="tool-card" id="card-word">
-    <summary>
-      <span class="tool-index">02</span>
-      <span class="tool-title">
-        <h2>Word ke PDF</h2>
-        <p>Ubah dokumen .docx menjadi PDF.</p>
-      </span>
-      <svg class="chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </summary>
-    <div class="tool-body">
-      <div class="dropzone" id="word-drop" tabindex="0" role="button" aria-label="Pilih berkas Word untuk diubah menjadi PDF">
-        <div class="dz-title">Seret berkas .docx ke sini, atau klik untuk memilih</div>
-        <div class="dz-sub">Bisa lebih dari satu berkas · hanya format .docx</div>
-        <input type="file" id="word-file" accept=".docx" multiple>
-      </div>
-      <ul class="file-list" id="word-list"></ul>
-      <div class="options-row">
-        <button class="btn" id="word-run" disabled>Ubah ke PDF</button>
-      </div>
-      <div class="status" id="word-status"></div>
-      <div class="result" id="word-result"></div>
-      <p class="size-note">Catatan: hanya format .docx (Word modern) yang didukung. Tata letak akan mendekati aslinya, namun elemen yang sangat kompleks bisa sedikit berbeda.</p>
-    </div>
-  </details>
-
-  <!-- ============ 3. GAMBAR KE PDF ============ -->
-  <details class="tool-card" id="card-png">
-    <summary>
-      <span class="tool-index">03</span>
-      <span class="tool-title">
-        <h2>Gambar ke PDF</h2>
-        <p>Gabungkan gambar PNG/JPG menjadi satu berkas PDF, satu gambar per halaman.</p>
-      </span>
-      <svg class="chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </summary>
-    <div class="tool-body">
-      <div class="dropzone" id="png-drop" tabindex="0" role="button" aria-label="Pilih gambar untuk diubah menjadi PDF">
-        <div class="dz-title">Seret gambar ke sini, atau klik untuk memilih</div>
-        <div class="dz-sub">Bisa lebih dari satu · format .png / .jpg</div>
-        <input type="file" id="png-file" accept="image/png,image/jpeg" multiple>
-      </div>
-      <ul class="file-list" id="png-list"></ul>
-      <div class="options-row">
-        <div class="field">
-          <label for="png-pagesize">Ukuran halaman</label>
-          <select id="png-pagesize">
-            <option value="fit" selected>Pas dengan gambar</option>
-            <option value="a4">A4 (gambar di tengah)</option>
-          </select>
+      <!-- 02. WORD KE PDF -->
+      <details class="tool-card" id="card-word" style="--card-color:#059669">
+        <summary>
+          <span class="tool-indicator">02</span>
+          <span class="tool-info">
+            <h2>Word &rarr; PDF</h2>
+            <p>Ubah dokumen .docx menjadi PDF dengan tata letak yang terjaga.</p>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </summary>
+        <div class="tool-body">
+          <div class="dropzone" id="word-drop" tabindex="0" role="button" aria-label="Pilih berkas Word untuk diubah menjadi PDF">
+            <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div class="dz-title">Seret berkas .docx ke sini, atau klik untuk memilih</div>
+            <div class="dz-sub">Bisa lebih dari satu berkas &middot; hanya format .docx</div>
+            <input type="file" id="word-file" accept=".docx" multiple>
+          </div>
+          <ul class="file-list" id="word-list"></ul>
+          <div class="options-row">
+            <button class="btn" id="word-run" disabled>Ubah ke PDF</button>
+          </div>
+          <div class="status" id="word-status"></div>
+          <div class="result" id="word-result"></div>
+          <p class="size-note">Catatan: hanya format .docx (Word modern) yang didukung. Tata letak akan mendekati aslinya, namun elemen yang sangat kompleks bisa sedikit berbeda.</p>
         </div>
-        <button class="btn" id="png-run" disabled>Buat PDF</button>
-      </div>
-      <div class="status" id="png-status"></div>
-      <div class="result" id="png-result"></div>
-      <p class="size-note">Urutan halaman mengikuti urutan pada daftar di atas — gunakan tombol panah untuk menyusun ulang.</p>
-    </div>
-  </details>
+      </details>
 
-  <!-- ============ 4. GABUNG PDF ============ -->
-  <details class="tool-card" id="card-merge">
-    <summary>
-      <span class="tool-index">04</span>
-      <span class="tool-title">
-        <h2>Gabung PDF</h2>
-        <p>Satukan beberapa berkas PDF menjadi satu berkas, sesuai urutan yang Anda tentukan.</p>
-      </span>
-      <svg class="chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </summary>
-    <div class="tool-body">
-      <div class="dropzone" id="merge-drop" tabindex="0" role="button" aria-label="Pilih berkas PDF untuk digabung">
-        <div class="dz-title">Seret berkas PDF ke sini, atau klik untuk memilih</div>
-        <div class="dz-sub">Minimal dua berkas · format .pdf</div>
-        <input type="file" id="merge-file" accept="application/pdf" multiple>
-      </div>
-      <ul class="file-list" id="merge-list"></ul>
-      <div class="options-row">
-        <button class="btn" id="merge-run" disabled>Gabungkan PDF</button>
-      </div>
-      <div class="status" id="merge-status"></div>
-      <div class="result" id="merge-result"></div>
-      <p class="size-note">Urutan penggabungan mengikuti urutan pada daftar di atas — gunakan tombol panah untuk menyusun ulang.</p>
-    </div>
-  </details>
-
-  <!-- ============ 5. PDF KE GAMBAR ============ -->
-  <details class="tool-card" id="card-p2i">
-    <summary>
-      <span class="tool-index">05</span>
-      <span class="tool-title">
-        <h2>PDF ke Gambar</h2>
-        <p>Ubah setiap halaman PDF menjadi gambar PNG.</p>
-      </span>
-      <svg class="chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </summary>
-    <div class="tool-body">
-      <div class="dropzone" id="p2i-drop" tabindex="0" role="button" aria-label="Pilih berkas PDF untuk diubah menjadi gambar">
-        <div class="dz-title">Seret berkas PDF ke sini, atau klik untuk memilih</div>
-        <div class="dz-sub">Bisa lebih dari satu berkas · format .pdf</div>
-        <input type="file" id="p2i-file" accept="application/pdf" multiple>
-      </div>
-      <ul class="file-list" id="p2i-list"></ul>
-      <div class="options-row">
-        <div class="field">
-          <label for="p2i-scale">Resolusi</label>
-          <select id="p2i-scale">
-            <option value="1">Standar</option>
-            <option value="2" selected>Tinggi</option>
-            <option value="3">Sangat tinggi</option>
-          </select>
+      <!-- 03. GAMBAR KE PDF -->
+      <details class="tool-card" id="card-png" style="--card-color:#D97706">
+        <summary>
+          <span class="tool-indicator">03</span>
+          <span class="tool-info">
+            <h2>Gambar &rarr; PDF</h2>
+            <p>Gabungkan gambar PNG/JPG menjadi satu berkas PDF, satu gambar per halaman.</p>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </summary>
+        <div class="tool-body">
+          <div class="dropzone" id="png-drop" tabindex="0" role="button" aria-label="Pilih gambar untuk diubah menjadi PDF">
+            <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div class="dz-title">Seret gambar ke sini, atau klik untuk memilih</div>
+            <div class="dz-sub">Bisa lebih dari satu &middot; format .png / .jpg</div>
+            <input type="file" id="png-file" accept="image/png,image/jpeg" multiple>
+          </div>
+          <ul class="file-list" id="png-list"></ul>
+          <div class="options-row">
+            <div class="field">
+              <label for="png-pagesize">Ukuran halaman</label>
+              <select id="png-pagesize">
+                <option value="fit" selected>Pas dengan gambar</option>
+                <option value="a4">A4 (gambar di tengah)</option>
+              </select>
+            </div>
+            <button class="btn" id="png-run" disabled>Buat PDF</button>
+          </div>
+          <div class="status" id="png-status"></div>
+          <div class="result" id="png-result"></div>
+          <p class="size-note">Urutan halaman mengikuti urutan pada daftar di atas &mdash; gunakan tombol panah untuk menyusun ulang.</p>
         </div>
-        <button class="btn" id="p2i-run" disabled>Ubah ke PNG</button>
-      </div>
-      <div class="status" id="p2i-status"></div>
-      <div class="result" id="p2i-result"></div>
-      <p class="size-note">Jika hasil lebih dari satu gambar, semua halaman akan dibungkus dalam satu berkas .zip.</p>
-    </div>
-  </details>
+      </details>
 
-  <footer>
-    <p><strong>Privasi:</strong> tidak ada berkas yang dikirim ke server — semua konversi terjadi di memori peramban Anda dan hilang saat halaman ditutup.</p>
-    <p>Dibuat sebagai satu berkas HTML mandiri. Buka langsung di peramban modern (Chrome, Edge, Firefox, Safari terbaru).</p>
-  </footer>
-</div>
+      <!-- 04. GABUNG PDF -->
+      <details class="tool-card" id="card-merge" style="--card-color:#DC2626">
+        <summary>
+          <span class="tool-indicator">04</span>
+          <span class="tool-info">
+            <h2>Gabung PDF</h2>
+            <p>Satukan beberapa berkas PDF menjadi satu berkas, sesuai urutan yang Anda tentukan.</p>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </summary>
+        <div class="tool-body">
+          <div class="dropzone" id="merge-drop" tabindex="0" role="button" aria-label="Pilih berkas PDF untuk digabung">
+            <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div class="dz-title">Seret berkas PDF ke sini, atau klik untuk memilih</div>
+            <div class="dz-sub">Minimal dua berkas &middot; format .pdf</div>
+            <input type="file" id="merge-file" accept="application/pdf" multiple>
+          </div>
+          <ul class="file-list" id="merge-list"></ul>
+          <div class="options-row">
+            <button class="btn" id="merge-run" disabled>Gabungkan PDF</button>
+          </div>
+          <div class="status" id="merge-status"></div>
+          <div class="result" id="merge-result"></div>
+          <p class="size-note">Urutan penggabungan mengikuti urutan pada daftar di atas &mdash; gunakan tombol panah untuk menyusun ulang.</p>
+        </div>
+      </details>
+
+      <!-- 05. PDF KE GAMBAR (full width) -->
+      <details class="tool-card" id="card-p2i" style="--card-color:#0891B2">
+        <summary>
+          <span class="tool-indicator">05</span>
+          <span class="tool-info">
+            <h2>PDF &rarr; Gambar</h2>
+            <p>Ubah setiap halaman PDF menjadi gambar PNG dengan resolusi yang bisa diatur.</p>
+          </span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </summary>
+        <div class="tool-body">
+          <div class="dropzone" id="p2i-drop" tabindex="0" role="button" aria-label="Pilih berkas PDF untuk diubah menjadi gambar">
+            <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div class="dz-title">Seret berkas PDF ke sini, atau klik untuk memilih</div>
+            <div class="dz-sub">Bisa lebih dari satu berkas &middot; format .pdf</div>
+            <input type="file" id="p2i-file" accept="application/pdf" multiple>
+          </div>
+          <ul class="file-list" id="p2i-list"></ul>
+          <div class="options-row">
+            <div class="field">
+              <label for="p2i-scale">Resolusi</label>
+              <select id="p2i-scale">
+                <option value="1">Standar</option>
+                <option value="2" selected>Tinggi</option>
+                <option value="3">Sangat tinggi</option>
+              </select>
+            </div>
+            <button class="btn" id="p2i-run" disabled>Ubah ke PNG</button>
+          </div>
+          <div class="status" id="p2i-status"></div>
+          <div class="result" id="p2i-result"></div>
+          <p class="size-note">Jika hasil lebih dari satu gambar, semua halaman akan dibungkus dalam satu berkas .zip.</p>
+        </div>
+      </details>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== Footer ===== -->
+<footer class="footer">
+  <div class="container">
+    <p><strong>Privasi:</strong> tidak ada berkas yang dikirim ke server &mdash; semua konversi terjadi di memori peramban Anda dan hilang saat halaman ditutup.</p>
+    <p>Dibuat sebagai satu berkas HTML mandiri &middot; Buka di peramban modern</p>
+  </div>
+</footer>
 
 <!-- hidden render surface for Word→PDF -->
 <div id="word-render-surface" style="position:absolute;left:-99999px;top:0;width:794px;background:#fff;padding:40px;font-family:'Inter',sans-serif;color:#111;"></div>
 
-<!-- ===== Library CDNs ===== -->
+<!-- ===== Libraries ===== -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -516,6 +656,31 @@
   if (window.pdfjsLib) {
     pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
   }
+
+  /* ---------------- Accordion: one open at a time ---------------- */
+  document.querySelectorAll('.tool-card').forEach(function(card){
+    card.addEventListener('toggle', function(){
+      if (this.open) {
+        document.querySelectorAll('.tool-card[open]').forEach(function(other){
+          if (other !== card) other.open = false;
+        });
+      }
+    });
+  });
+
+  /* ---------------- Hero tags open tool cards ---------------- */
+  document.querySelectorAll('.hero-tag').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id = this.getAttribute('data-tool');
+      var card = document.getElementById(id);
+      if (card) {
+        var wasOpen = card.open;
+        document.querySelectorAll('.tool-card[open]').forEach(function(c){ c.open = false; });
+        card.open = !wasOpen;
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
 
   /* ---------------- Helpers ---------------- */
   function bytesToSize(bytes){
@@ -662,7 +827,7 @@
   function stampResult(resultEl, label){
     var stamp = document.createElement("div");
     stamp.className = "stamp";
-    stamp.textContent = label || "SELESAI";
+    stamp.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ' + (label || "SELESAI");
     resultEl.appendChild(stamp);
     return stamp;
   }
@@ -673,7 +838,7 @@
     var a = document.createElement("a");
     a.className = "dl-link";
     a.href = "#";
-    a.textContent = "Unduh " + filename;
+    a.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Unduh ' + filename;
     a.addEventListener("click", function(e){
       e.preventDefault();
       downloadBlob(blob, filename);
