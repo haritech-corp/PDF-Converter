@@ -79,9 +79,19 @@
     <input type="range" id="sign-scale" min="25" max="200" value="100">
     <span class="fsize" id="sign-scale-val">100%</span>
   </div>
-  <div class="options-row" style="margin-top:12px">
-    <button class="btn" id="sign-run-btn" disabled data-i18n="sign.run">Bubuhkan Tanda Tangan</button>
+</div>
+
+<div class="preview-section">
+  <h2 class="sign-section-title" data-i18n="sign.preview">Pratinjau</h2>
+  <div class="preview-wrap">
+    <canvas id="preview-canvas"></canvas>
+    <p class="preview-hint" data-i18n="sign.hint">Seret tanda tangan untuk menyesuaikan posisi</p>
+    <div class="preview-empty" id="preview-empty" data-i18n="sign.preview.empty">Unggah berkas untuk melihat pratinjau</div>
   </div>
+</div>
+
+<div class="options-row">
+  <button class="btn" id="sign-run-btn" disabled data-i18n="sign.run">Bubuhkan Tanda Tangan</button>
 </div>
 
 <div class="status" id="status"></div>
@@ -101,11 +111,14 @@
   </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
 const i18n = {
   id: {
     'site.title':'Meja Dokumen','page.title':'Tanda Tangan — Meja Dokumen',
@@ -113,13 +126,13 @@ const i18n = {
     'sign.pad':'Tanda Tangan','sign.clear':'Hapus','sign.upload':'Unggah',
     'sign.target':'Berkas Target','sign.target.text':'Seret berkas atau klik untuk memilih','sign.target.sub':'Format .pdf / .png / .jpg / .docx',
     'sign.position':'Posisi & Ukuran','pos.lb':'Kiri Bawah','pos.rb':'Kanan Bawah','pos.ct':'Tengah','pos.cs':'Kustom',
-    'sign.scale':'Ukuran','sign.run':'Bubuhkan Tanda Tangan',
+    'sign.scale':'Ukuran','sign.preview':'Pratinjau','sign.hint':'Seret tanda tangan untuk menyesuaikan posisi','sign.preview.empty':'Unggah berkas untuk melihat pratinjau',
+    'sign.run':'Bubuhkan Tanda Tangan',
     'footer.privacy':'Privasi: semua pemrosesan lokal.','footer.back':'← Kembali',
     'status.progress':'Memproses...','status.done':'Selesai.',
     'stamp.label':'SELESAI','dl.single':'Unduh {0}',
     'drag.text':'Lepaskan file di sini','sign.no.signature':'Buat atau unggah tanda tangan terlebih dahulu.',
-    'sign.no.file':'Pilih berkas target terlebih dahulu.',
-    'sign.info':'Tanda tangan akan dibubuhkan di setiap halaman.'
+    'sign.no.file':'Pilih berkas target terlebih dahulu.'
   },
   en: {
     'site.title':'Document Desk','page.title':'Sign — Document Desk',
@@ -127,13 +140,13 @@ const i18n = {
     'sign.pad':'Signature','sign.clear':'Clear','sign.upload':'Upload',
     'sign.target':'Target File','sign.target.text':'Drop file or click to select','sign.target.sub':'.pdf / .png / .jpg / .docx format',
     'sign.position':'Position & Size','pos.lb':'Left Bottom','pos.rb':'Right Bottom','pos.ct':'Center','pos.cs':'Custom',
-    'sign.scale':'Size','sign.run':'Apply Signature',
+    'sign.scale':'Size','sign.preview':'Preview','sign.hint':'Drag signature to adjust position','sign.preview.empty':'Upload a file to see preview',
+    'sign.run':'Apply Signature',
     'footer.privacy':'Privacy: all processing is local.','footer.back':'← Back',
     'status.progress':'Processing...','status.done':'Done.',
     'stamp.label':'DONE','dl.single':'Download {0}',
     'drag.text':'Drop files here','sign.no.signature':'Draw or upload a signature first.',
-    'sign.no.file':'Select a target file first.',
-    'sign.info':'Signature will be applied to every page.'
+    'sign.no.file':'Select a target file first.'
   }
 };
 var lang = 'id';
@@ -172,7 +185,23 @@ function setStatus(el, text) { el.textContent = text || ''; el.classList.toggle(
 function setError(el, text) { el.textContent = text || ''; el.classList.toggle('err', true); }
 function stripExt(name) { var i = name.lastIndexOf('.'); return i > 0 ? name.slice(0, i) : name; }
 
-// --- Global drag overlay for target file ---
+// --- State ---
+var activePreset = 'lb';
+var customX = 50, customY = 50;
+var scalePct = 100;
+var signaturePngBlob = null;
+var targetFile = null;
+
+var state = {
+  previewImg: null,
+  docW: 794,
+  docH: 1123,
+};
+var sigPreviewImg = new Image();
+var isDragging = false;
+var dragOffsetX = 0, dragOffsetY = 0;
+
+// --- Global drag overlay ---
 var dragOverlay = document.getElementById('drag-overlay');
 document.addEventListener('dragenter', function(e) { e.preventDefault(); if (!dragOverlay.dataset.entered) { dragOverlay.dataset.entered = '1'; dragOverlay.style.display = 'flex'; } });
 document.addEventListener('dragover', function(e) { e.preventDefault(); });
@@ -183,7 +212,6 @@ document.addEventListener('drop', function(e) { e.preventDefault(); delete dragO
 var signCanvas = document.getElementById('sign-canvas');
 var signCtx = signCanvas.getContext('2d');
 var signDrawing = false;
-var signaturePngBlob = null;
 
 function setupSignCanvas() {
   signCtx.strokeStyle = '#000';
@@ -223,12 +251,20 @@ signCanvas.addEventListener('pointerleave', function() {
   signDrawing = false;
 });
 
+function loadSigPreviewImg() {
+  if (signaturePngBlob) {
+    sigPreviewImg.src = URL.createObjectURL(signaturePngBlob);
+  }
+}
+
 function clearSignature() {
   signCtx.clearRect(0, 0, signCanvas.width, signCanvas.height);
   setupSignCanvas();
   signaturePngBlob = null;
   document.getElementById('sign-preview').style.display = 'none';
   document.getElementById('sign-run-btn').disabled = true;
+  sigPreviewImg.src = '';
+  renderPreview();
 }
 document.getElementById('sign-clear-btn').addEventListener('click', clearSignature);
 
@@ -236,10 +272,11 @@ function updateSignatureBlob() {
   signCanvas.toBlob(function(blob) {
     signaturePngBlob = blob;
     document.getElementById('sign-run-btn').disabled = !(blob && targetFile);
+    loadSigPreviewImg();
+    renderPreview();
   }, 'image/png');
 }
 
-// Upload signature image
 document.getElementById('sign-upload-btn').addEventListener('click', function() {
   document.getElementById('sign-upload-input').click();
 });
@@ -265,8 +302,179 @@ document.getElementById('sign-upload-input').addEventListener('change', function
   e.target.value = '';
 });
 
+// --- Preview ---
+var previewCanvas = document.getElementById('preview-canvas');
+var previewEmpty = document.getElementById('preview-empty');
+var previewHint = document.querySelector('.preview-hint');
+
+async function loadPreviewImage(file) {
+  var ext = file.name.toLowerCase();
+  previewEmpty.style.display = 'none';
+
+  try {
+    if (ext.endsWith('.pdf')) {
+      var buf = await file.arrayBuffer();
+      var pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+      var page = await pdf.getPage(1);
+      var fullVp = page.getViewport({ scale: 1 });
+      state.docW = fullVp.width;
+      state.docH = fullVp.height;
+      var vp = page.getViewport({ scale: Math.min(1200 / fullVp.width, 0.75) });
+      var c = document.createElement('canvas');
+      c.width = vp.width;
+      c.height = vp.height;
+      await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+      state.previewImg = new Image();
+      state.previewImg.onload = function() { renderPreview(); };
+      state.previewImg.src = c.toDataURL();
+    } else if (ext.match(/\.(png|jpg|jpeg)$/)) {
+      state.previewImg = new Image();
+      state.previewImg.onload = function() {
+        state.docW = state.previewImg.naturalWidth;
+        state.docH = state.previewImg.naturalHeight;
+        renderPreview();
+      };
+      state.previewImg.src = URL.createObjectURL(file);
+    } else if (ext.endsWith('.docx')) {
+      var buf = await file.arrayBuffer();
+      var result = await mammoth.convertToHtml({ arrayBuffer: buf });
+      var div = document.createElement('div');
+      div.style.cssText = 'position:fixed;left:0;top:0;z-index:9999;width:595px;background:#fff;padding:20px;font-family:Calibri,Segoe UI,Arial,sans-serif;font-size:11pt;line-height:1.4;';
+      div.innerHTML = '<style>body{margin:0;padding:0}h1{font-size:16pt}h2{font-size:13pt}p{margin:0 0 6pt}table{border-collapse:collapse}td,th{border:1px solid #bbb;padding:4px}</style>' + result.value.slice(0, 1500);
+      document.body.appendChild(div);
+      await new Promise(function(r) { setTimeout(r, 150); });
+      var c = await html2canvas(div, { scale: 0.5, useCORS: true, allowTaint: true, logging: false });
+      document.body.removeChild(div);
+      state.docW = c.width * 2;
+      state.docH = c.height * 2;
+      state.previewImg = new Image();
+      state.previewImg.onload = function() { renderPreview(); };
+      state.previewImg.src = c.toDataURL();
+    }
+  } catch (e) {
+    console.error('Preview load failed:', e);
+    previewEmpty.style.display = 'block';
+    previewEmpty.textContent = 'Gagal memuat pratinjau';
+  }
+}
+
+function getSigPreviewCoords() {
+  if (!state.previewImg || !sigPreviewImg.complete || !signaturePngBlob) return null;
+  var wrap = previewCanvas.parentElement;
+  var maxW = wrap.clientWidth - 24 || 600;
+  var maxH = 500;
+  var fit = Math.min(maxW / state.docW, maxH / state.docH, 1);
+  var sigDocW = 100 * (scalePct / 100);
+  var sigDocH = sigDocW * (sigPreviewImg.naturalHeight / sigPreviewImg.naturalWidth);
+  var pos = getSignPosition(state.docW, state.docH, sigDocW, sigDocH);
+  return {
+    fit: fit,
+    x: pos.x * fit,
+    y: pos.y * fit,
+    w: sigDocW * fit,
+    h: sigDocH * fit,
+    sigDocW: sigDocW,
+    sigDocH: sigDocH
+  };
+}
+
+function renderPreview() {
+  var ctx = previewCanvas.getContext('2d');
+  if (!state.previewImg || !sigPreviewImg.complete || !signaturePngBlob) {
+    ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+    previewHint.style.display = 'none';
+    if (!targetFile) previewEmpty.style.display = 'block';
+    return;
+  }
+  previewEmpty.style.display = 'none';
+  var wrap = previewCanvas.parentElement;
+  var maxW = wrap.clientWidth - 24 || 600;
+  var maxH = 500;
+  var fit = Math.min(maxW / state.docW, maxH / state.docH, 1);
+  var pw = Math.round(state.docW * fit);
+  var ph = Math.round(state.docH * fit);
+  if (previewCanvas.width !== pw || previewCanvas.height !== ph) {
+    previewCanvas.width = pw;
+    previewCanvas.height = ph;
+  }
+  ctx.clearRect(0, 0, pw, ph);
+  ctx.drawImage(state.previewImg, 0, 0, pw, ph);
+  var sigW = 100 * (scalePct / 100);
+  var sigH = sigW * (sigPreviewImg.naturalHeight / sigPreviewImg.naturalWidth);
+  var pos = getSignPosition(state.docW, state.docH, sigW, sigH);
+  var px = pos.x * fit;
+  var py = pos.y * fit;
+  var sw = sigW * fit;
+  var sh = sigH * fit;
+  ctx.drawImage(sigPreviewImg, px, py, sw, sh);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(15,118,110,0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([5, 4]);
+  ctx.strokeRect(px, py, sw, sh);
+  ctx.restore();
+  previewHint.style.display = 'block';
+}
+
+// --- Drag on preview ---
+function handlePreviewPointerDown(e) {
+  if (!state.previewImg || !sigPreviewImg.complete || !signaturePngBlob) return;
+  var rect = previewCanvas.getBoundingClientRect();
+  var mx = (e.clientX - rect.left) * (previewCanvas.width / rect.width);
+  var my = (e.clientY - rect.top) * (previewCanvas.height / rect.height);
+  var sig = getSigPreviewCoords();
+  if (!sig) return;
+  if (mx >= sig.x - 4 && mx <= sig.x + sig.w + 4 && my >= sig.y - 4 && my <= sig.y + sig.h + 4) {
+    isDragging = true;
+    dragOffsetX = mx - sig.x;
+    dragOffsetY = my - sig.y;
+    previewCanvas.setPointerCapture(e.pointerId);
+    previewCanvas.style.cursor = 'grabbing';
+  }
+}
+
+function handlePreviewPointerMove(e) {
+  if (!isDragging) return;
+  var rect = previewCanvas.getBoundingClientRect();
+  var mx = (e.clientX - rect.left) * (previewCanvas.width / rect.width);
+  var my = (e.clientY - rect.top) * (previewCanvas.height / rect.height);
+  var sig = getSigPreviewCoords();
+  if (!sig) return;
+  var docX = Math.max(0, Math.min(state.docW - sig.sigDocW, (mx - dragOffsetX) / sig.fit));
+  var docY = Math.max(0, Math.min(state.docH - sig.sigDocH, (my - dragOffsetY) / sig.fit));
+  activePreset = 'cs';
+  customX = state.docW - sig.sigDocW > 0 ? Math.round((docX / (state.docW - sig.sigDocW)) * 100) : 0;
+  customY = state.docH - sig.sigDocH > 0 ? Math.round((docY / (state.docH - sig.sigDocH)) * 100) : 0;
+  customX = Math.max(0, Math.min(100, customX));
+  customY = Math.max(0, Math.min(100, customY));
+  updatePositionUI();
+  renderPreview();
+}
+
+function handlePreviewPointerUp() {
+  if (isDragging) {
+    isDragging = false;
+    previewCanvas.style.cursor = 'grab';
+  }
+}
+
+previewCanvas.addEventListener('pointerdown', handlePreviewPointerDown);
+previewCanvas.addEventListener('pointermove', handlePreviewPointerMove);
+previewCanvas.addEventListener('pointerup', handlePreviewPointerUp);
+previewCanvas.addEventListener('pointerleave', handlePreviewPointerUp);
+
+function updatePositionUI() {
+  document.querySelectorAll('.sign-preset').forEach(function(b) {
+    b.classList.toggle('active', b.getAttribute('data-preset') === activePreset);
+  });
+  document.getElementById('sign-custom-controls').style.display = activePreset === 'cs' ? 'block' : 'none';
+  document.getElementById('sign-pos-x').value = customX;
+  document.getElementById('sign-pos-x-val').textContent = customX + '%';
+  document.getElementById('sign-pos-y').value = customY;
+  document.getElementById('sign-pos-y-val').textContent = customY + '%';
+}
+
 // --- Target file ---
-var targetFile = null;
 var targetFileListEl = document.getElementById('target-file-list');
 var targetDropzone = document.getElementById('target-dropzone');
 var targetInput = document.getElementById('target-file-input');
@@ -281,8 +489,12 @@ function renderTargetFile() {
     + '<button type="button" id="target-remove-btn">&times;</button>';
   li.querySelector('#target-remove-btn').addEventListener('click', function() {
     targetFile = null;
+    state.previewImg = null;
     renderTargetFile();
+    renderPreview();
     document.getElementById('sign-run-btn').disabled = !(signaturePngBlob && targetFile);
+    previewEmpty.style.display = 'block';
+    previewHint.style.display = 'none';
   });
   targetFileListEl.appendChild(li);
   document.getElementById('sign-run-btn').disabled = !(signaturePngBlob && targetFile);
@@ -291,6 +503,7 @@ function renderTargetFile() {
 function addTargetFile(file) {
   targetFile = file;
   renderTargetFile();
+  loadPreviewImage(file);
 }
 
 targetDropzone.addEventListener('click', function() { targetInput.click(); });
@@ -300,30 +513,30 @@ targetInput.addEventListener('change', function() { if (targetInput.files[0]) ad
 targetDropzone.addEventListener('drop', function(e) { var dt = e.dataTransfer; if (dt && dt.files && dt.files.length) addTargetFile(dt.files[0]); });
 
 // --- Position controls ---
-var activePreset = 'lb';
-var customX = 50, customY = 50;
-var scalePct = 100;
-
 document.querySelectorAll('.sign-preset').forEach(function(btn) {
   btn.addEventListener('click', function() {
     document.querySelectorAll('.sign-preset').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
     activePreset = btn.getAttribute('data-preset');
     document.getElementById('sign-custom-controls').style.display = activePreset === 'cs' ? 'block' : 'none';
+    renderPreview();
   });
 });
 
 document.getElementById('sign-pos-x').addEventListener('input', function() {
   customX = parseInt(this.value);
   document.getElementById('sign-pos-x-val').textContent = customX + '%';
+  renderPreview();
 });
 document.getElementById('sign-pos-y').addEventListener('input', function() {
   customY = parseInt(this.value);
   document.getElementById('sign-pos-y-val').textContent = customY + '%';
+  renderPreview();
 });
 document.getElementById('sign-scale').addEventListener('input', function() {
   scalePct = parseInt(this.value);
   document.getElementById('sign-scale-val').textContent = scalePct + '%';
+  renderPreview();
 });
 
 function getSignPosition(pageW, pageH, sigW, sigH) {
@@ -413,7 +626,7 @@ async function signDocx(docxBytes, sigBytes) {
 document.getElementById('sign-run-btn').addEventListener('click', async function() {
   if (!signaturePngBlob) { setError(statusEl, t('sign.no.signature')); return; }
   if (!targetFile) { setError(statusEl, t('sign.no.file')); return; }
-  runBtn = document.getElementById('sign-run-btn');
+  var runBtn = document.getElementById('sign-run-btn');
   runBtn.disabled = true;
   resultEl.innerHTML = '';
   setStatus(statusEl, t('status.progress'));
