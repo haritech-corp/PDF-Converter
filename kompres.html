@@ -12,6 +12,13 @@
 
 <div class="watermark" aria-hidden="true"><span>haritech</span></div>
 
+<div id="drag-overlay" class="drag-overlay">
+  <div class="drag-overlay-inner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <p data-i18n="drag.text">Lepaskan file di sini</p>
+  </div>
+</div>
+
 <div class="container">
 
 <header class="site-header">
@@ -85,7 +92,8 @@ const i18n = {
     'btn.up':'Naik','btn.down':'Turun','btn.remove':'Hapus',
     'stamp.label':'SELESAI',
     'size.orig':'Ukuran asli {0} → hasil {1}','size.saved':'(turun {0}%)','size.unsaved':'(tidak lebih kecil)',
-    'zip.label':'{0} berkas dalam .zip','dl.single':'Unduh {0}','dl.zip':'Unduh pdf-terkompresi.zip'
+    'zip.label':'{0} berkas dalam .zip','dl.single':'Unduh {0}','dl.zip':'Unduh pdf-terkompresi.zip',
+    'drag.text':'Lepaskan file di sini'
   },
   en: {
     'site.title':'Document Desk','page.title':'Compress PDF — Document Desk',
@@ -99,7 +107,8 @@ const i18n = {
     'btn.up':'Up','btn.down':'Down','btn.remove':'Remove',
     'stamp.label':'DONE',
     'size.orig':'Original {0} → result {1}','size.saved':'(reduced {0}%)','size.unsaved':'(not smaller)',
-    'zip.label':'{0} files in .zip','dl.single':'Download {0}','dl.zip':'Download pdf-compressed.zip'
+    'zip.label':'{0} files in .zip','dl.single':'Download {0}','dl.zip':'Download pdf-compressed.zip',
+    'drag.text':'Drop files here'
   }
 };
 var lang = 'id';
@@ -140,6 +149,13 @@ function setError(el, text) { el.textContent = text || ''; el.classList.toggle('
 function stripExt(name) { var i = name.lastIndexOf('.'); return i > 0 ? name.slice(0, i) : name; }
 function fileKey(f) { return f.name + '_' + f.size + '_' + f.lastModified; }
 
+// --- Global drag overlay ---
+var dragOverlay = document.getElementById('drag-overlay');
+document.addEventListener('dragenter', function(e) { e.preventDefault(); if (!dragOverlay.dataset.entered) { dragOverlay.dataset.entered = '1'; dragOverlay.style.display = 'flex'; } });
+document.addEventListener('dragover', function(e) { e.preventDefault(); });
+document.addEventListener('dragleave', function(e) { if (!e.relatedTarget || e.relatedTarget === document.body || e.relatedTarget === document.documentElement) { delete dragOverlay.dataset.entered; dragOverlay.style.display = 'none'; } });
+document.addEventListener('drop', function(e) { e.preventDefault(); delete dragOverlay.dataset.entered; dragOverlay.style.display = 'none'; var dt = e.dataTransfer; if (dt && dt.files && dt.files.length) addFiles(dt.files); });
+
 // --- PDF Thumbnail ---
 function loadPdfThumbnail(file, imgEl) {
   file.arrayBuffer().then(function(buf) {
@@ -154,7 +170,7 @@ function loadPdfThumbnail(file, imgEl) {
   .catch(function(){ imgEl.style.display = 'none'; });
 }
 
-// --- File list controller ---
+// --- File list ---
 var files = [], listEl = document.getElementById('file-list'), runBtn = document.getElementById('run-btn');
 function renderList() {
   listEl.innerHTML = '';

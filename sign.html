@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title data-i18n="page.title">Tanda Tangan — Meja Dokumen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="watermark" aria-hidden="true"><span>haritech</span></div>
+
+<div id="drag-overlay" class="drag-overlay">
+  <div class="drag-overlay-inner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <p data-i18n="drag.text">Lepaskan file di sini</p>
+  </div>
+</div>
+
+<div class="container">
+
+<header class="site-header">
+  <a href="index.html" class="back-link">&larr; <span data-i18n="site.title">Meja Dokumen</span></a>
+  <div class="lang-toggle">
+    <button class="lang-btn active" data-lang="id" onclick="setLang('id')">ID</button>
+    <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+  </div>
+</header>
+
+<div class="page-title">
+  <h1 data-i18n="tool.title">Tanda Tangan</h1>
+  <p data-i18n="tool.desc">Bubuhkan tanda tangan ke PDF, gambar, atau dokumen.</p>
+</div>
+
+<div class="sign-layout">
+  <div class="sign-pad-section">
+    <h2 class="sign-section-title" data-i18n="sign.pad">Tanda Tangan</h2>
+    <div class="sign-canvas-wrap" tabindex="0">
+      <canvas id="sign-canvas" class="sign-canvas" width="794" height="400"></canvas>
+    </div>
+    <div class="sign-actions">
+      <button class="btn btn-outline" id="sign-clear-btn" data-i18n="sign.clear">Hapus</button>
+      <button class="btn btn-outline" id="sign-upload-btn" data-i18n="sign.upload">Unggah</button>
+      <input type="file" id="sign-upload-input" accept="image/png,image/jpeg">
+    </div>
+    <img id="sign-preview" class="sign-preview-img" alt="Pratinjau tanda tangan">
+  </div>
+
+  <div class="sign-target-section">
+    <h2 class="sign-section-title" data-i18n="sign.target">Berkas Target</h2>
+    <div class="dropzone" id="target-dropzone" tabindex="0" role="button" aria-label="Pilih berkas target" style="padding:20px 16px">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <div class="dz-title" data-i18n="sign.target.text">Seret berkas atau klik untuk memilih</div>
+      <div class="dz-sub" data-i18n="sign.target.sub">Format .pdf / .png / .jpg / .docx</div>
+      <input type="file" id="target-file-input" accept="application/pdf,image/png,image/jpeg,.docx">
+    </div>
+    <ul class="file-list" id="target-file-list" style="margin-top:0"></ul>
+  </div>
+</div>
+
+<div class="sign-position-section">
+  <h2 class="sign-section-title" data-i18n="sign.position">Posisi & Ukuran</h2>
+  <div class="sign-presets">
+    <button class="sign-preset active" data-preset="lb" data-i18n="pos.lb">Kiri Bawah</button>
+    <button class="sign-preset" data-preset="rb" data-i18n="pos.rb">Kanan Bawah</button>
+    <button class="sign-preset" data-preset="ct" data-i18n="pos.ct">Tengah</button>
+    <button class="sign-preset" data-preset="cs" data-i18n="pos.cs">Kustom</button>
+  </div>
+  <div id="sign-custom-controls" style="display:none">
+    <div class="sign-custom-row">
+      <div class="field"><label>X</label><input type="range" id="sign-pos-x" min="0" max="100" value="50"><span class="fsize" id="sign-pos-x-val">50%</span></div>
+      <div class="field"><label>Y</label><input type="range" id="sign-pos-y" min="0" max="100" value="50"><span class="fsize" id="sign-pos-y-val">50%</span></div>
+    </div>
+  </div>
+  <div class="sign-scale-section">
+    <label data-i18n="sign.scale">Ukuran</label>
+    <input type="range" id="sign-scale" min="25" max="200" value="100">
+    <span class="fsize" id="sign-scale-val">100%</span>
+  </div>
+  <div class="options-row" style="margin-top:12px">
+    <button class="btn" id="sign-run-btn" disabled data-i18n="sign.run">Bubuhkan Tanda Tangan</button>
+  </div>
+</div>
+
+<div class="status" id="status"></div>
+<div class="result" id="result"></div>
+
+</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-left">
+      <p data-i18n="footer.privacy">Privasi: semua pemrosesan lokal.</p>
+      <p><a href="index.html" data-i18n="footer.back">&larr; Kembali</a></p>
+    </div>
+    <div class="footer-right">
+      <p><span class="brand-badge">haritech</span></p>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const i18n = {
+  id: {
+    'site.title':'Meja Dokumen','page.title':'Tanda Tangan — Meja Dokumen',
+    'tool.title':'Tanda Tangan','tool.desc':'Bubuhkan tanda tangan ke PDF, gambar, atau dokumen.',
+    'sign.pad':'Tanda Tangan','sign.clear':'Hapus','sign.upload':'Unggah',
+    'sign.target':'Berkas Target','sign.target.text':'Seret berkas atau klik untuk memilih','sign.target.sub':'Format .pdf / .png / .jpg / .docx',
+    'sign.position':'Posisi & Ukuran','pos.lb':'Kiri Bawah','pos.rb':'Kanan Bawah','pos.ct':'Tengah','pos.cs':'Kustom',
+    'sign.scale':'Ukuran','sign.run':'Bubuhkan Tanda Tangan',
+    'footer.privacy':'Privasi: semua pemrosesan lokal.','footer.back':'← Kembali',
+    'status.progress':'Memproses...','status.done':'Selesai.',
+    'stamp.label':'SELESAI','dl.single':'Unduh {0}',
+    'drag.text':'Lepaskan file di sini','sign.no.signature':'Buat atau unggah tanda tangan terlebih dahulu.',
+    'sign.no.file':'Pilih berkas target terlebih dahulu.',
+    'sign.info':'Tanda tangan akan dibubuhkan di setiap halaman.'
+  },
+  en: {
+    'site.title':'Document Desk','page.title':'Sign — Document Desk',
+    'tool.title':'Sign','tool.desc':'Add signature to PDF, image, or document.',
+    'sign.pad':'Signature','sign.clear':'Clear','sign.upload':'Upload',
+    'sign.target':'Target File','sign.target.text':'Drop file or click to select','sign.target.sub':'.pdf / .png / .jpg / .docx format',
+    'sign.position':'Position & Size','pos.lb':'Left Bottom','pos.rb':'Right Bottom','pos.ct':'Center','pos.cs':'Custom',
+    'sign.scale':'Size','sign.run':'Apply Signature',
+    'footer.privacy':'Privacy: all processing is local.','footer.back':'← Back',
+    'status.progress':'Processing...','status.done':'Done.',
+    'stamp.label':'DONE','dl.single':'Download {0}',
+    'drag.text':'Drop files here','sign.no.signature':'Draw or upload a signature first.',
+    'sign.no.file':'Select a target file first.',
+    'sign.info':'Signature will be applied to every page.'
+  }
+};
+var lang = 'id';
+
+function t(key) {
+  var str = i18n[lang] && i18n[lang][key];
+  if (str === undefined) return key;
+  for (var i = 1; i < arguments.length; i++) str = str.replace('{' + (i - 1) + '}', arguments[i]);
+  return str;
+}
+function setLang(l) {
+  lang = l; document.documentElement.lang = l;
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
+    if (i18n[l] && i18n[l][key] !== undefined) el.textContent = i18n[l][key];
+  });
+  document.querySelectorAll('.lang-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-lang') === l);
+  });
+  localStorage.setItem('lang', l);
+}
+(function(){ var s = localStorage.getItem('lang'); if (s && s !== 'id') setLang(s); })();
+
+function bytesToSize(bytes) {
+  if (bytes === 0) return '0 B';
+  var u = ['B','KB','MB','GB'];
+  var i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), u.length - 1);
+  return (bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 2) + ' ' + u[i];
+}
+function downloadBlob(blob, name) {
+  var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+}
+function setStatus(el, text) { el.textContent = text || ''; el.classList.toggle('err', false); }
+function setError(el, text) { el.textContent = text || ''; el.classList.toggle('err', true); }
+function stripExt(name) { var i = name.lastIndexOf('.'); return i > 0 ? name.slice(0, i) : name; }
+
+// --- Global drag overlay for target file ---
+var dragOverlay = document.getElementById('drag-overlay');
+document.addEventListener('dragenter', function(e) { e.preventDefault(); if (!dragOverlay.dataset.entered) { dragOverlay.dataset.entered = '1'; dragOverlay.style.display = 'flex'; } });
+document.addEventListener('dragover', function(e) { e.preventDefault(); });
+document.addEventListener('dragleave', function(e) { if (!e.relatedTarget || e.relatedTarget === document.body || e.relatedTarget === document.documentElement) { delete dragOverlay.dataset.entered; dragOverlay.style.display = 'none'; } });
+document.addEventListener('drop', function(e) { e.preventDefault(); delete dragOverlay.dataset.entered; dragOverlay.style.display = 'none'; var dt = e.dataTransfer; if (dt && dt.files && dt.files.length) addTargetFile(dt.files[0]); });
+
+// --- Signature Pad ---
+var signCanvas = document.getElementById('sign-canvas');
+var signCtx = signCanvas.getContext('2d');
+var signDrawing = false;
+var signaturePngBlob = null;
+
+function setupSignCanvas() {
+  signCtx.strokeStyle = '#000';
+  signCtx.lineWidth = 2.5;
+  signCtx.lineCap = 'round';
+  signCtx.lineJoin = 'round';
+}
+setupSignCanvas();
+
+function getCanvasPos(e) {
+  var rect = signCanvas.getBoundingClientRect();
+  return {
+    x: (e.clientX - rect.left) * (signCanvas.width / rect.width),
+    y: (e.clientY - rect.top) * (signCanvas.height / rect.height)
+  };
+}
+
+signCanvas.addEventListener('pointerdown', function(e) {
+  signDrawing = true;
+  var pos = getCanvasPos(e);
+  signCtx.beginPath();
+  signCtx.moveTo(pos.x, pos.y);
+  signCanvas.setPointerCapture(e.pointerId);
+});
+signCanvas.addEventListener('pointermove', function(e) {
+  if (!signDrawing) return;
+  var pos = getCanvasPos(e);
+  signCtx.lineTo(pos.x, pos.y);
+  signCtx.stroke();
+});
+signCanvas.addEventListener('pointerup', function(e) {
+  signDrawing = false;
+  signCtx.closePath();
+  updateSignatureBlob();
+});
+signCanvas.addEventListener('pointerleave', function() {
+  signDrawing = false;
+});
+
+function clearSignature() {
+  signCtx.clearRect(0, 0, signCanvas.width, signCanvas.height);
+  setupSignCanvas();
+  signaturePngBlob = null;
+  document.getElementById('sign-preview').style.display = 'none';
+  document.getElementById('sign-run-btn').disabled = true;
+}
+document.getElementById('sign-clear-btn').addEventListener('click', clearSignature);
+
+function updateSignatureBlob() {
+  signCanvas.toBlob(function(blob) {
+    signaturePngBlob = blob;
+    document.getElementById('sign-run-btn').disabled = !(blob && targetFile);
+  }, 'image/png');
+}
+
+// Upload signature image
+document.getElementById('sign-upload-btn').addEventListener('click', function() {
+  document.getElementById('sign-upload-input').click();
+});
+document.getElementById('sign-upload-input').addEventListener('change', function(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  var img = new Image();
+  img.onload = function() {
+    var w = signCanvas.width;
+    var h = signCanvas.height;
+    signCtx.clearRect(0, 0, w, h);
+    setupSignCanvas();
+    var r = Math.min(w / img.naturalWidth, h / img.naturalHeight) * 0.85;
+    var dx = (w - img.naturalWidth * r) / 2;
+    var dy = (h - img.naturalHeight * r) / 2;
+    signCtx.drawImage(img, dx, dy, img.naturalWidth * r, img.naturalHeight * r);
+    updateSignatureBlob();
+    var preview = document.getElementById('sign-preview');
+    preview.src = URL.createObjectURL(signaturePngBlob);
+    preview.style.display = 'block';
+  };
+  img.src = URL.createObjectURL(file);
+  e.target.value = '';
+});
+
+// --- Target file ---
+var targetFile = null;
+var targetFileListEl = document.getElementById('target-file-list');
+var targetDropzone = document.getElementById('target-dropzone');
+var targetInput = document.getElementById('target-file-input');
+
+function renderTargetFile() {
+  targetFileListEl.innerHTML = '';
+  if (!targetFile) return;
+  var li = document.createElement('li');
+  li.innerHTML = '<span class="thumb-placeholder"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>'
+    + '<span class="fname">' + targetFile.name + '</span>'
+    + '<span class="fsize">' + bytesToSize(targetFile.size) + '</span>'
+    + '<button type="button" id="target-remove-btn">&times;</button>';
+  li.querySelector('#target-remove-btn').addEventListener('click', function() {
+    targetFile = null;
+    renderTargetFile();
+    document.getElementById('sign-run-btn').disabled = !(signaturePngBlob && targetFile);
+  });
+  targetFileListEl.appendChild(li);
+  document.getElementById('sign-run-btn').disabled = !(signaturePngBlob && targetFile);
+}
+
+function addTargetFile(file) {
+  targetFile = file;
+  renderTargetFile();
+}
+
+targetDropzone.addEventListener('click', function() { targetInput.click(); });
+targetInput.addEventListener('change', function() { if (targetInput.files[0]) addTargetFile(targetInput.files[0]); targetInput.value = ''; });
+['dragenter','dragover'].forEach(function(ev) { targetDropzone.addEventListener(ev, function(e) { e.preventDefault(); e.stopPropagation(); targetDropzone.classList.add('dragover'); }); });
+['dragleave','drop'].forEach(function(ev) { targetDropzone.addEventListener(ev, function(e) { e.preventDefault(); e.stopPropagation(); targetDropzone.classList.remove('dragover'); }); });
+targetDropzone.addEventListener('drop', function(e) { var dt = e.dataTransfer; if (dt && dt.files && dt.files.length) addTargetFile(dt.files[0]); });
+
+// --- Position controls ---
+var activePreset = 'lb';
+var customX = 50, customY = 50;
+var scalePct = 100;
+
+document.querySelectorAll('.sign-preset').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.sign-preset').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    activePreset = btn.getAttribute('data-preset');
+    document.getElementById('sign-custom-controls').style.display = activePreset === 'cs' ? 'block' : 'none';
+  });
+});
+
+document.getElementById('sign-pos-x').addEventListener('input', function() {
+  customX = parseInt(this.value);
+  document.getElementById('sign-pos-x-val').textContent = customX + '%';
+});
+document.getElementById('sign-pos-y').addEventListener('input', function() {
+  customY = parseInt(this.value);
+  document.getElementById('sign-pos-y-val').textContent = customY + '%';
+});
+document.getElementById('sign-scale').addEventListener('input', function() {
+  scalePct = parseInt(this.value);
+  document.getElementById('sign-scale-val').textContent = scalePct + '%';
+});
+
+function getSignPosition(pageW, pageH, sigW, sigH) {
+  var margin = 30;
+  switch (activePreset) {
+    case 'lb': return { x: margin, y: pageH - sigH - margin };
+    case 'rb': return { x: pageW - sigW - margin, y: pageH - sigH - margin };
+    case 'ct': return { x: (pageW - sigW) / 2, y: (pageH - sigH) / 2 };
+    case 'cs': return { x: (pageW - sigW) * (customX / 100), y: (pageH - sigH) * (customY / 100) };
+  }
+}
+
+// --- Sign processing ---
+var statusEl = document.getElementById('status');
+var resultEl = document.getElementById('result');
+
+async function signPdf(pdfBytes, sigBytes) {
+  var pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
+  var pngImage = await pdfDoc.embedPng(sigBytes);
+  var pages = pdfDoc.getPages();
+  for (var i = 0; i < pages.length; i++) {
+    var page = pages[i];
+    var pw = page.getWidth();
+    var ph = page.getHeight();
+    var sigW = 100 * (scalePct / 100);
+    var sigH = sigW * (pngImage.height / pngImage.width);
+    var pos = getSignPosition(pw, ph, sigW, sigH);
+    page.drawImage(pngImage, { x: pos.x, y: pos.y, width: sigW, height: sigH });
+  }
+  return pdfDoc.save();
+}
+
+async function signImage(imgFile, sigBytes) {
+  return new Promise(function(resolve, reject) {
+    var img = new Image();
+    img.onload = function() {
+      var sigImg = new Image();
+      sigImg.onload = function() {
+        var w = img.naturalWidth;
+        var h = img.naturalHeight;
+        var sigW = 150 * (scalePct / 100);
+        var sigH = sigW * (sigImg.naturalHeight / sigImg.naturalWidth);
+        var pos = getSignPosition(w, h, sigW, sigH);
+        var c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        var ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        ctx.drawImage(sigImg, pos.x, pos.y, sigW, sigH);
+        var ext = imgFile.name.match(/\.(png|jpg|jpeg)$/i);
+        var mime = ext && (ext[1].toLowerCase() === 'png') ? 'image/png' : 'image/jpeg';
+        c.toBlob(function(b) { resolve(b); }, mime, mime === 'image/png' ? undefined : 0.92);
+      };
+      sigImg.onerror = reject;
+      sigImg.src = URL.createObjectURL(sigBytes);
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(imgFile);
+  });
+}
+
+async function signDocx(docxBytes, sigBytes) {
+  var result = await mammoth.convertToHtml({ arrayBuffer: docxBytes });
+  var surface = document.createElement('div');
+  surface.style.cssText = 'position:fixed;left:0;top:0;z-index:9999;width:794px;background:#fff;padding:36px;font-family:Calibri,Segoe UI,Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.35;color:#000;';
+  surface.innerHTML = '<style>body{margin:0;padding:0}h1{font-size:16pt}h2{font-size:13pt}p{margin:0 0 6pt}table{border-collapse:collapse}td,th{border:1px solid #bbb;padding:4px}</style>' + result.value;
+  document.body.appendChild(surface);
+  await document.fonts.ready;
+  await new Promise(function(r) { requestAnimationFrame(r); });
+  await new Promise(function(r) { setTimeout(r, 150); });
+  return new Promise(function(resolve, reject) {
+    var doc = new jspdf.jsPDF('p', 'pt', 'a4');
+    doc.html(surface, {
+      x: 20, y: 20, width: 555, windowWidth: 794,
+      html2canvas: { scale: 2, useCORS: true, allowTaint: true, logging: false },
+      callback: async function(finishedDoc) {
+        document.body.removeChild(surface);
+        var pdfBytes = finishedDoc.output('arraybuffer');
+        try {
+          var signedBytes = await signPdf(pdfBytes, sigBytes);
+          resolve(signedBytes);
+        } catch (e) { reject(e); }
+      }
+    });
+  });
+}
+
+document.getElementById('sign-run-btn').addEventListener('click', async function() {
+  if (!signaturePngBlob) { setError(statusEl, t('sign.no.signature')); return; }
+  if (!targetFile) { setError(statusEl, t('sign.no.file')); return; }
+  runBtn = document.getElementById('sign-run-btn');
+  runBtn.disabled = true;
+  resultEl.innerHTML = '';
+  setStatus(statusEl, t('status.progress'));
+  try {
+    var sigBytes = await signaturePngBlob.arrayBuffer();
+    var buf = await targetFile.arrayBuffer();
+    var ext = targetFile.name.toLowerCase();
+    var outBytes, outName, outType;
+
+    if (ext.endsWith('.pdf')) {
+      outBytes = await signPdf(buf, sigBytes);
+      outName = stripExt(targetFile.name) + '-ditandatangani.pdf';
+      outType = 'application/pdf';
+    } else if (ext.endsWith('.png') || ext.endsWith('.jpg') || ext.endsWith('.jpeg')) {
+      var blob = await signImage(targetFile, signaturePngBlob);
+      outBytes = await blob.arrayBuffer();
+      outName = stripExt(targetFile.name) + '-ditandatangani.' + (ext.endsWith('.png') ? 'png' : 'jpg');
+      outType = blob.type;
+    } else if (ext.endsWith('.docx')) {
+      outBytes = await signDocx(buf, sigBytes);
+      outName = stripExt(targetFile.name) + '-ditandatangani.pdf';
+      outType = 'application/pdf';
+    } else {
+      throw new Error('Format tidak didukung');
+    }
+
+    setStatus(statusEl, t('status.done'));
+    var s = document.createElement('div'); s.className = 'stamp';
+    s.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ' + t('stamp.label');
+    resultEl.appendChild(s);
+    var a = document.createElement('a'); a.className = 'dl-link'; a.href = '#';
+    a.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> ' + t('dl.single', outName);
+    a.addEventListener('click', function(e) { e.preventDefault(); downloadBlob(new Blob([outBytes], { type: outType }), outName); });
+    resultEl.appendChild(a);
+  } catch (err) { console.error(err); setError(statusEl, err.message); }
+  finally { runBtn.disabled = false; }
+});
+</script>
+</body>
+</html>

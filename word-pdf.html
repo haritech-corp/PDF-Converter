@@ -5,12 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title data-i18n="page.title">Word ke PDF — Meja Dokumen</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="watermark" aria-hidden="true"><span>haritech</span></div>
+
+<div id="drag-overlay" class="drag-overlay">
+  <div class="drag-overlay-inner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <p data-i18n="drag.text">Lepaskan file di sini</p>
+  </div>
+</div>
 
 <div class="container">
 
@@ -24,7 +31,7 @@
 
 <div class="page-title">
   <h1 data-i18n="tool.title">Word &rarr; PDF</h1>
-  <p data-i18n="tool.desc">Ubah .docx ke PDF.</p>
+  <p data-i18n="tool.desc">Ubah .docx ke PDF dengan format & warna.</p>
 </div>
 
 <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Pilih berkas Word">
@@ -43,7 +50,7 @@
 <div class="status" id="status"></div>
 <div class="result" id="result"></div>
 
-<p class="note" data-i18n="note">Catatan: hanya .docx yang didukung. Tata letak akan mendekati aslinya.</p>
+<p class="note" data-i18n="note">Catatan: hanya .docx yang didukung. Format, warna, dan tata letak akan dipertahankan.</p>
 
 </div>
 
@@ -59,7 +66,7 @@
   </div>
 </footer>
 
-<div id="word-render-surface" style="position:absolute;left:-99999px;top:0;width:794px;background:#fff;padding:40px;font-family:'Inter',sans-serif;color:#111;"></div>
+<div id="word-render-surface" style="position:absolute;left:-99999px;top:0;width:794px;overflow:visible;"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -68,27 +75,29 @@
 const i18n = {
   id: {
     'site.title':'Meja Dokumen','page.title':'Word ke PDF — Meja Dokumen',
-    'tool.title':'Word → PDF','tool.desc':'Ubah .docx ke PDF.',
+    'tool.title':'Word → PDF','tool.desc':'Ubah .docx ke PDF dengan format & warna.',
     'dropzone.text':'Seret berkas atau klik untuk memilih','dropzone.sub':'Format .docx',
     'btn.action':'Ubah ke PDF',
-    'note':'Catatan: hanya .docx yang didukung. Tata letak akan mendekati aslinya.',
+    'note':'Catatan: hanya .docx yang didukung. Format, warna, dan tata letak akan dipertahankan.',
     'footer.privacy':'Privasi: semua pemrosesan lokal.','footer.back':'← Kembali',
     'status.progress':'Mengubah {0} ({1}/{2})...','status.done':'Selesai.',
     'btn.up':'Naik','btn.down':'Turun','btn.remove':'Hapus',
     'stamp.label':'SELESAI','zip.label':'{0} berkas dalam .zip',
-    'dl.single':'Unduh {0}','dl.zip':'Unduh hasil-konversi.zip'
+    'dl.single':'Unduh {0}','dl.zip':'Unduh hasil-konversi.zip',
+    'drag.text':'Lepaskan file di sini'
   },
   en: {
     'site.title':'Document Desk','page.title':'Word to PDF — Document Desk',
-    'tool.title':'Word → PDF','tool.desc':'Convert .docx to PDF.',
+    'tool.title':'Word → PDF','tool.desc':'Convert .docx to PDF with format & colors.',
     'dropzone.text':'Drop files or click to select','dropzone.sub':'.docx format',
     'btn.action':'Convert to PDF',
-    'note':'Note: only .docx is supported. Layout will be preserved.',
+    'note':'Note: only .docx is supported. Format, colors, and layout will be preserved.',
     'footer.privacy':'Privacy: all processing is local.','footer.back':'← Back',
     'status.progress':'Converting {0} ({1}/{2})...','status.done':'Done.',
     'btn.up':'Up','btn.down':'Down','btn.remove':'Remove',
     'stamp.label':'DONE','zip.label':'{0} files in .zip',
-    'dl.single':'Download {0}','dl.zip':'Download conversion-result.zip'
+    'dl.single':'Download {0}','dl.zip':'Download conversion-result.zip',
+    'drag.text':'Drop files here'
   }
 };
 var lang = 'id';
@@ -128,16 +137,43 @@ function setError(el, text) { el.textContent = text || ''; el.classList.toggle('
 function stripExt(name) { var i = name.lastIndexOf('.'); return i > 0 ? name.slice(0, i) : name; }
 function fileKey(f) { return f.name + '_' + f.size + '_' + f.lastModified; }
 
-// --- File list controller ---
+// --- Global drag overlay ---
+var dragOverlay = document.getElementById('drag-overlay');
+document.addEventListener('dragenter', function(e) { e.preventDefault(); if (!dragOverlay.dataset.entered) { dragOverlay.dataset.entered = '1'; dragOverlay.style.display = 'flex'; } });
+document.addEventListener('dragover', function(e) { e.preventDefault(); });
+document.addEventListener('dragleave', function(e) { if (!e.relatedTarget || e.relatedTarget === document.body || e.relatedTarget === document.documentElement) { delete dragOverlay.dataset.entered; dragOverlay.style.display = 'none'; } });
+document.addEventListener('drop', function(e) { e.preventDefault(); delete dragOverlay.dataset.entered; dragOverlay.style.display = 'none'; var dt = e.dataTransfer; if (dt && dt.files && dt.files.length) addFiles(dt.files); });
+
+// --- File list with docx thumbnail ---
 var files = [], listEl = document.getElementById('file-list'), runBtn = document.getElementById('run-btn');
+
+function loadDocxThumbnail(file, imgEl) {
+  file.arrayBuffer().then(function(buf) {
+    return mammoth.convertToHtml({ arrayBuffer: buf });
+  }).then(function(result) {
+    var tmp = document.createElement('div');
+    tmp.style.cssText = 'font-family:Calibri,Segoe UI,Arial,sans-serif;font-size:12pt;padding:8px;background:#fff;width:160px;overflow:hidden;';
+    tmp.innerHTML = result.value.slice(0, 500);
+    document.body.appendChild(tmp);
+    return html2canvas(tmp, { scale: 0.25, useCORS: true, width: 160, height: 160 }).then(function(canvas) {
+      document.body.removeChild(tmp);
+      return canvas;
+    });
+  }).then(function(c) {
+    imgEl.src = c.toDataURL(); imgEl.style.display = 'block';
+  }).catch(function() {
+    imgEl.style.display = 'none';
+  });
+}
+
 function renderList() {
   listEl.innerHTML = '';
   files.forEach(function(f, idx) {
     var li = document.createElement('li');
-    // docx icon placeholder
-    var ph = document.createElement('span'); ph.className = 'thumb-placeholder';
-    ph.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
-    li.appendChild(ph);
+    var thumb = document.createElement('img');
+    thumb.className = 'thumb'; thumb.alt = ''; thumb.style.display = 'none';
+    li.appendChild(thumb);
+    loadDocxThumbnail(f, thumb);
     var name = document.createElement('span'); name.className = 'fname'; name.textContent = f.name; li.appendChild(name);
     var size = document.createElement('span'); size.className = 'fsize'; size.textContent = bytesToSize(f.size); li.appendChild(size);
     var up = document.createElement('button'); up.className = 'move'; up.type = 'button'; up.innerHTML = '&uarr;'; up.disabled = idx === 0;
@@ -168,24 +204,39 @@ function addFiles(fl) {
   renderList();
 }
 
-// --- Word conversion ---
+// --- Word conversion with color & format support ---
 var statusEl = document.getElementById('status'), resultEl = document.getElementById('result');
 var surface = document.getElementById('word-render-surface');
 
-function renderSurfaceToPdfBlob() {
-  return new Promise(function(resolve, reject) {
-    // Move surface into viewport for html2canvas to capture it
-    surface.style.position = 'fixed';
-    surface.style.left = '0';
-    surface.style.top = '0';
-    surface.style.zIndex = '9999';
+var WORD_CSS = '<style>'
+  + 'body{margin:0;padding:0;font-family:Calibri,Segoe UI,Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.35;color:#000;background:#fff}'
+  + 'p{margin:0 0 6pt;line-height:1.35}'
+  + 'h1{font-size:16pt;font-weight:bold;margin:12pt 0 6pt;color:#000}'
+  + 'h2{font-size:13pt;font-weight:bold;margin:10pt 0 6pt;color:#000}'
+  + 'h3{font-size:12pt;font-weight:bold;margin:8pt 0 4pt;color:#000}'
+  + 'table{border-collapse:collapse;width:100%;margin:6pt 0}'
+  + 'td,th{border:1px solid #bbb;padding:4px 6pt;text-align:left;vertical-align:top}'
+  + 'ol,ul{margin:4pt 0;padding-left:24pt}'
+  + 'li{margin:2pt 0}'
+  + 'img{max-width:100%;height:auto}'
+  + '</style>';
 
-    var doc = new jspdf.jsPDF('p', 'pt', 'a4');
+async function renderSurfaceToPdfBlob() {
+  surface.style.position = 'fixed';
+  surface.style.left = '0';
+  surface.style.top = '0';
+  surface.style.zIndex = '9999';
+
+  await document.fonts.ready;
+  await new Promise(function(r) { requestAnimationFrame(r); });
+  await new Promise(function(r) { setTimeout(r, 150); });
+
+  var doc = new jspdf.jsPDF('p', 'pt', 'a4');
+  return new Promise(function(resolve, reject) {
     doc.html(surface, {
       x: 20, y: 20, width: 555, windowWidth: 794,
-      html2canvas: { scale: 1.5, useCORS: true },
+      html2canvas: { scale: 2, useCORS: true, allowTaint: true, logging: false },
       callback: function(finishedDoc) {
-        // Move surface back off-screen
         surface.style.position = 'absolute';
         surface.style.left = '-99999px';
         surface.style.top = '0';
@@ -199,7 +250,7 @@ function renderSurfaceToPdfBlob() {
 async function convertOne(file) {
   var buf = await file.arrayBuffer();
   var result = await mammoth.convertToHtml({ arrayBuffer: buf });
-  surface.innerHTML = "<div style='font-size:14px;line-height:1.5;'>" + result.value + "</div>";
+  surface.innerHTML = WORD_CSS + '<div style="padding:36px;font-family:Calibri,Segoe UI,Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.35;color:#000;">' + result.value + '</div>';
   var blob = await renderSurfaceToPdfBlob();
   surface.innerHTML = '';
   return blob;

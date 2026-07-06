@@ -12,6 +12,13 @@
 
 <div class="watermark" aria-hidden="true"><span>haritech</span></div>
 
+<div id="drag-overlay" class="drag-overlay">
+  <div class="drag-overlay-inner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <p data-i18n="drag.text">Lepaskan file di sini</p>
+  </div>
+</div>
+
 <div class="container">
 
 <header class="site-header">
@@ -59,8 +66,11 @@
   </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
 const i18n = {
   id: {
     'site.title':'Meja Dokumen','page.title':'Gabung PDF — Meja Dokumen',
@@ -71,7 +81,8 @@ const i18n = {
     'footer.privacy':'Privasi: semua pemrosesan lokal.','footer.back':'← Kembali',
     'status.progress':'Menggabungkan {0} ({1}/{2})...','status.done':'Selesai.',
     'btn.up':'Naik','btn.down':'Turun','btn.remove':'Hapus',
-    'stamp.label':'SELESAI','dl.single':'Unduh {0}','size.files':'{0} berkas digabung'
+    'stamp.label':'SELESAI','dl.single':'Unduh {0}','size.files':'{0} berkas digabung',
+    'drag.text':'Lepaskan file di sini'
   },
   en: {
     'site.title':'Document Desk','page.title':'Merge PDF — Document Desk',
@@ -82,7 +93,8 @@ const i18n = {
     'footer.privacy':'Privacy: all processing is local.','footer.back':'← Back',
     'status.progress':'Merging {0} ({1}/{2})...','status.done':'Done.',
     'btn.up':'Up','btn.down':'Down','btn.remove':'Remove',
-    'stamp.label':'DONE','dl.single':'Download {0}','size.files':'{0} files merged'
+    'stamp.label':'DONE','dl.single':'Download {0}','size.files':'{0} files merged',
+    'drag.text':'Drop files here'
   }
 };
 var lang = 'id';
@@ -122,15 +134,37 @@ function setError(el, text) { el.textContent = text || ''; el.classList.toggle('
 function stripExt(name) { var i = name.lastIndexOf('.'); return i > 0 ? name.slice(0, i) : name; }
 function fileKey(f) { return f.name + '_' + f.size + '_' + f.lastModified; }
 
-// --- File list with PDF icon ---
+// --- Global drag overlay ---
+var dragOverlay = document.getElementById('drag-overlay');
+document.addEventListener('dragenter', function(e) { e.preventDefault(); if (!dragOverlay.dataset.entered) { dragOverlay.dataset.entered = '1'; dragOverlay.style.display = 'flex'; } });
+document.addEventListener('dragover', function(e) { e.preventDefault(); });
+document.addEventListener('dragleave', function(e) { if (!e.relatedTarget || e.relatedTarget === document.body || e.relatedTarget === document.documentElement) { delete dragOverlay.dataset.entered; dragOverlay.style.display = 'none'; } });
+document.addEventListener('drop', function(e) { e.preventDefault(); delete dragOverlay.dataset.entered; dragOverlay.style.display = 'none'; var dt = e.dataTransfer; if (dt && dt.files && dt.files.length) addFiles(dt.files); });
+
+// --- PDF Thumbnail ---
+function loadPdfThumbnail(file, imgEl) {
+  file.arrayBuffer().then(function(buf) {
+    return pdfjsLib.getDocument({ data: buf }).promise;
+  }).then(function(pdf) { return pdf.getPage(1); })
+  .then(function(page) {
+    var vp = page.getViewport({ scale: .3 });
+    var c = document.createElement('canvas');
+    c.width = vp.width; c.height = vp.height;
+    return page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise.then(function(){ return c; });
+  }).then(function(c) { imgEl.src = c.toDataURL(); imgEl.style.display = 'block'; })
+  .catch(function(){ imgEl.style.display = 'none'; });
+}
+
+// --- File list ---
 var files = [], listEl = document.getElementById('file-list'), runBtn = document.getElementById('run-btn');
 function renderList() {
   listEl.innerHTML = '';
   files.forEach(function(f, idx) {
     var li = document.createElement('li');
-    var ph = document.createElement('span'); ph.className = 'thumb-placeholder';
-    ph.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
-    li.appendChild(ph);
+    var thumb = document.createElement('img');
+    thumb.className = 'thumb'; thumb.alt = ''; thumb.style.display = 'none';
+    li.appendChild(thumb);
+    loadPdfThumbnail(f, thumb);
     var name = document.createElement('span'); name.className = 'fname'; name.textContent = f.name; li.appendChild(name);
     var size = document.createElement('span'); size.className = 'fsize'; size.textContent = bytesToSize(f.size); li.appendChild(size);
     var up = document.createElement('button'); up.className = 'move'; up.type = 'button'; up.innerHTML = '&uarr;'; up.disabled = idx === 0;
