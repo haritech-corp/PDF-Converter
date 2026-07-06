@@ -9,6 +9,9 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+<div class="watermark" aria-hidden="true"><span>haritech</span></div>
+
 <div class="container">
 
 <header class="site-header">
@@ -54,8 +57,13 @@
 
 <footer class="site-footer">
   <div class="container">
-    <p data-i18n="footer.privacy">Privasi: semua pemrosesan lokal. Data Anda tidak meninggalkan perangkat.</p>
-    <p><a href="index.html" data-i18n="footer.back">&larr; Kembali</a></p>
+    <div class="footer-left">
+      <p data-i18n="footer.privacy">Privasi: semua pemrosesan lokal.</p>
+      <p><a href="index.html" data-i18n="footer.back">&larr; Kembali</a></p>
+    </div>
+    <div class="footer-right">
+      <p><span class="brand-badge">haritech</span></p>
+    </div>
   </div>
 </footer>
 
@@ -66,50 +74,30 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs
 
 const i18n = {
   id: {
-    'site.title': 'Meja Dokumen',
-    'page.title': 'PDF ke Gambar — Meja Dokumen',
-    'tool.title': 'PDF → Gambar',
-    'tool.desc': 'Ekstrak halaman sebagai PNG.',
-    'dropzone.text': 'Seret berkas atau klik untuk memilih',
-    'dropzone.sub': 'Format .pdf',
-    'scale.label': 'Resolusi',
-    'scale.standard': 'Standar',
-    'scale.high': 'Tinggi',
-    'scale.veryhigh': 'Sangat tinggi',
-    'btn.action': 'Ubah ke PNG',
-    'note': 'Jika hasil lebih dari satu gambar, semua akan dibungkus dalam .zip.',
-    'footer.privacy': 'Privasi: semua pemrosesan lokal. Data Anda tidak meninggalkan perangkat.',
-    'footer.back': '← Kembali',
-    'status.progress': 'Merender {0} — halaman {1} dari {2}...',
-    'status.done': 'Selesai.',
-    'btn.up': 'Naik', 'btn.down': 'Turun', 'btn.remove': 'Hapus',
-    'stamp.label': 'SELESAI',
-    'zip.label': '{0} gambar dalam .zip',
-    'dl.single': 'Unduh {0}',
-    'dl.zip': 'Unduh halaman-pdf.zip'
+    'site.title':'Meja Dokumen','page.title':'PDF ke Gambar — Meja Dokumen',
+    'tool.title':'PDF → Gambar','tool.desc':'Ekstrak halaman sebagai PNG.',
+    'dropzone.text':'Seret berkas atau klik untuk memilih','dropzone.sub':'Format .pdf',
+    'scale.label':'Resolusi','scale.standard':'Standar','scale.high':'Tinggi','scale.veryhigh':'Sangat tinggi',
+    'btn.action':'Ubah ke PNG',
+    'note':'Jika hasil lebih dari satu gambar, semua akan dibungkus dalam .zip.',
+    'footer.privacy':'Privasi: semua pemrosesan lokal.','footer.back':'← Kembali',
+    'status.progress':'Merender {0} — halaman {1} dari {2}...','status.done':'Selesai.',
+    'btn.up':'Naik','btn.down':'Turun','btn.remove':'Hapus',
+    'stamp.label':'SELESAI','zip.label':'{0} gambar dalam .zip',
+    'dl.single':'Unduh {0}','dl.zip':'Unduh halaman-pdf.zip'
   },
   en: {
-    'site.title': 'Document Desk',
-    'page.title': 'PDF to Image — Document Desk',
-    'tool.title': 'PDF → Image',
-    'tool.desc': 'Extract pages as PNG.',
-    'dropzone.text': 'Drop files or click to select',
-    'dropzone.sub': '.pdf format',
-    'scale.label': 'Resolution',
-    'scale.standard': 'Standard',
-    'scale.high': 'High',
-    'scale.veryhigh': 'Very high',
-    'btn.action': 'Convert to PNG',
-    'note': 'If multiple images, all will be bundled in a .zip.',
-    'footer.privacy': 'Privacy: all processing is local. Your data never leaves your device.',
-    'footer.back': '← Back',
-    'status.progress': 'Rendering {0} — page {1} of {2}...',
-    'status.done': 'Done.',
-    'btn.up': 'Up', 'btn.down': 'Down', 'btn.remove': 'Remove',
-    'stamp.label': 'DONE',
-    'zip.label': '{0} images in .zip',
-    'dl.single': 'Download {0}',
-    'dl.zip': 'Download pdf-pages.zip'
+    'site.title':'Document Desk','page.title':'PDF to Image — Document Desk',
+    'tool.title':'PDF → Image','tool.desc':'Extract pages as PNG.',
+    'dropzone.text':'Drop files or click to select','dropzone.sub':'.pdf format',
+    'scale.label':'Resolution','scale.standard':'Standard','scale.high':'High','scale.veryhigh':'Very high',
+    'btn.action':'Convert to PNG',
+    'note':'If multiple images, all will be bundled in a .zip.',
+    'footer.privacy':'Privacy: all processing is local.','footer.back':'← Back',
+    'status.progress':'Rendering {0} — page {1} of {2}...','status.done':'Done.',
+    'btn.up':'Up','btn.down':'Down','btn.remove':'Remove',
+    'stamp.label':'DONE','zip.label':'{0} images in .zip',
+    'dl.single':'Download {0}','dl.zip':'Download pdf-pages.zip'
   }
 };
 var lang = 'id';
@@ -140,8 +128,7 @@ function bytesToSize(bytes) {
   return (bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 2) + ' ' + u[i];
 }
 function downloadBlob(blob, name) {
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a'); a.href = url; a.download = name;
+  var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = url; a.download = name;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
 }
@@ -150,13 +137,32 @@ function setError(el, text) { el.textContent = text || ''; el.classList.toggle('
 function stripExt(name) { var i = name.lastIndexOf('.'); return i > 0 ? name.slice(0, i) : name; }
 function fileKey(f) { return f.name + '_' + f.size + '_' + f.lastModified; }
 
+// --- PDF Thumbnail ---
+function loadPdfThumbnail(file, imgEl) {
+  file.arrayBuffer().then(function(buf) {
+    return pdfjsLib.getDocument({ data: buf }).promise;
+  }).then(function(pdf) { return pdf.getPage(1); })
+  .then(function(page) {
+    var vp = page.getViewport({ scale: .3 });
+    var c = document.createElement('canvas');
+    c.width = vp.width; c.height = vp.height;
+    return page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise.then(function(){ return c; });
+  }).then(function(c) { imgEl.src = c.toDataURL(); imgEl.style.display = 'block'; })
+  .catch(function(){ imgEl.style.display = 'none'; });
+}
+
+// --- File list ---
 var files = [], listEl = document.getElementById('file-list'), runBtn = document.getElementById('run-btn');
 function renderList() {
   listEl.innerHTML = '';
   files.forEach(function(f, idx) {
     var li = document.createElement('li');
-    var n = document.createElement('span'); n.className = 'fname'; n.textContent = f.name; li.appendChild(n);
-    var s = document.createElement('span'); s.className = 'fsize'; s.textContent = bytesToSize(f.size); li.appendChild(s);
+    var thumb = document.createElement('img');
+    thumb.className = 'thumb'; thumb.alt = ''; thumb.style.display = 'none';
+    li.appendChild(thumb);
+    loadPdfThumbnail(f, thumb);
+    var name = document.createElement('span'); name.className = 'fname'; name.textContent = f.name; li.appendChild(name);
+    var size = document.createElement('span'); size.className = 'fsize'; size.textContent = bytesToSize(f.size); li.appendChild(size);
     var up = document.createElement('button'); up.className = 'move'; up.type = 'button'; up.innerHTML = '&uarr;'; up.disabled = idx === 0;
     up.addEventListener('click', function(){ var t = files[idx-1]; files[idx-1] = files[idx]; files[idx] = t; renderList(); });
     li.appendChild(up);
@@ -185,41 +191,28 @@ function addFiles(fl) {
   renderList();
 }
 
-var statusEl = document.getElementById('status'), resultEl = document.getElementById('result');
-var scaleSel = document.getElementById('scale');
+// --- PDF to Image ---
+var statusEl = document.getElementById('status'), resultEl = document.getElementById('result'), scaleSel = document.getElementById('scale');
 
 async function renderOne(file, scale, zip, holder) {
-  var buf = await file.arrayBuffer();
-  var pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-  var base = stripExt(file.name);
+  var buf = await file.arrayBuffer(); var pdf = await pdfjsLib.getDocument({ data: buf }).promise; var base = stripExt(file.name);
   for (var i = 1; i <= pdf.numPages; i++) {
     setStatus(statusEl, t('status.progress', file.name, i, pdf.numPages));
-    var page = await pdf.getPage(i);
-    var vp = page.getViewport({ scale: scale });
-    var c = document.createElement('canvas');
-    c.width = vp.width; c.height = vp.height;
-    var ctx = c.getContext('2d');
+    var page = await pdf.getPage(i); var vp = page.getViewport({ scale: scale });
+    var c = document.createElement('canvas'); c.width = vp.width; c.height = vp.height; var ctx = c.getContext('2d');
     await page.render({ canvasContext: ctx, viewport: vp }).promise;
     var pngBlob = await new Promise(function(res){ c.toBlob(res, 'image/png'); });
     var name = pdf.numPages > 1 ? base + '-hal-' + i + '.png' : base + '.png';
-    zip.file(name, pngBlob);
-    holder.count++;
-    holder.last = { name: name, blob: pngBlob };
+    zip.file(name, pngBlob); holder.count++; holder.last = { name: name, blob: pngBlob };
   }
 }
 
 runBtn.addEventListener('click', async function() {
-  var fl = files.slice();
-  if (!fl.length) return;
-  runBtn.disabled = true;
-  resultEl.innerHTML = '';
-  var scale = parseFloat(scaleSel.value);
+  var fl = files.slice(); if (!fl.length) return;
+  runBtn.disabled = true; resultEl.innerHTML = ''; var scale = parseFloat(scaleSel.value);
   try {
-    var zip = new JSZip();
-    var holder = { count: 0, last: null };
-    for (var i = 0; i < fl.length; i++) {
-      await renderOne(fl[i], scale, zip, holder);
-    }
+    var zip = new JSZip(); var holder = { count: 0, last: null };
+    for (var i = 0; i < fl.length; i++) { await renderOne(fl[i], scale, zip, holder); }
     setStatus(statusEl, t('status.done'));
     var s = document.createElement('div'); s.className = 'stamp';
     s.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ' + t('stamp.label');
