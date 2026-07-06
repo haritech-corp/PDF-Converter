@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title data-i18n="page.title">Kompres PDF — Meja Dokumen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+
+<header class="site-header">
+  <a href="index.html" class="back-link">&larr; <span data-i18n="site.title">Meja Dokumen</span></a>
+  <div class="lang-toggle">
+    <button class="lang-btn active" data-lang="id" onclick="setLang('id')">ID</button>
+    <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+  </div>
+</header>
+
+<div class="page-title">
+  <h1 data-i18n="tool.title">Kompres PDF</h1>
+  <p data-i18n="tool.desc">Perkecil ukuran berkas PDF.</p>
+</div>
+
+<div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Pilih berkas PDF">
+  <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+  <div class="dz-title" data-i18n="dropzone.text">Seret berkas atau klik untuk memilih</div>
+  <div class="dz-sub" data-i18n="dropzone.sub">Format .pdf</div>
+  <input type="file" id="file-input" accept="application/pdf" multiple>
+</div>
+
+<ul class="file-list" id="file-list"></ul>
+
+<div class="options-row">
+  <div class="field">
+    <label for="quality" data-i18n="quality.label">Kualitas</label>
+    <select id="quality">
+      <option value="high" data-i18n="quality.high">Tinggi</option>
+      <option value="balanced" selected data-i18n="quality.balanced">Sedang</option>
+      <option value="low" data-i18n="quality.low">Rendah</option>
+    </select>
+  </div>
+  <button class="btn" id="run-btn" disabled data-i18n="btn.action">Kompres</button>
+</div>
+
+<div class="status" id="status"></div>
+<div class="result" id="result"></div>
+
+<p class="note" data-i18n="note">Catatan: halaman dikonversi ke gambar. Teks tidak bisa disalin pada hasil kompresi.</p>
+
+</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <p data-i18n="footer.privacy">Privasi: semua pemrosesan lokal. Data Anda tidak meninggalkan perangkat.</p>
+    <p><a href="index.html" data-i18n="footer.back">&larr; Kembali</a></p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+const i18n = {
+  id: {
+    'site.title': 'Meja Dokumen',
+    'page.title': 'Kompres PDF — Meja Dokumen',
+    'tool.title': 'Kompres PDF',
+    'tool.desc': 'Perkecil ukuran berkas PDF.',
+    'dropzone.text': 'Seret berkas atau klik untuk memilih',
+    'dropzone.sub': 'Format .pdf',
+    'quality.label': 'Kualitas',
+    'quality.high': 'Tinggi',
+    'quality.balanced': 'Sedang',
+    'quality.low': 'Rendah',
+    'btn.action': 'Kompres',
+    'note': 'Catatan: halaman dikonversi ke gambar. Teks tidak bisa disalin pada hasil kompresi.',
+    'footer.privacy': 'Privasi: semua pemrosesan lokal. Data Anda tidak meninggalkan perangkat.',
+    'footer.back': '← Kembali',
+    'status.progress': 'Memproses {0} — halaman {1} dari {2}...',
+    'status.done': 'Selesai.',
+    'status.empty': '',
+    'btn.up': 'Naik',
+    'btn.down': 'Turun',
+    'btn.remove': 'Hapus',
+    'stamp.label': 'SELESAI',
+    'size.orig': 'Ukuran asli {0} → hasil {1}',
+    'size.saved': '(turun {0}%)',
+    'size.unsaved': '(tidak lebih kecil)',
+    'zip.label': '{0} berkas dalam .zip',
+    'dl.single': 'Unduh {0}',
+    'dl.zip': 'Unduh pdf-terkompresi.zip'
+  },
+  en: {
+    'site.title': 'Document Desk',
+    'page.title': 'Compress PDF — Document Desk',
+    'tool.title': 'Compress PDF',
+    'tool.desc': 'Reduce PDF file size.',
+    'dropzone.text': 'Drop files or click to select',
+    'dropzone.sub': '.pdf format',
+    'quality.label': 'Quality',
+    'quality.high': 'High',
+    'quality.balanced': 'Balanced',
+    'quality.low': 'Low',
+    'btn.action': 'Compress',
+    'note': 'Note: pages are converted to images. Text will not be selectable.',
+    'footer.privacy': 'Privacy: all processing is local. Your data never leaves your device.',
+    'footer.back': '← Back',
+    'status.progress': 'Processing {0} — page {1} of {2}...',
+    'status.done': 'Done.',
+    'status.empty': '',
+    'btn.up': 'Up',
+    'btn.down': 'Down',
+    'btn.remove': 'Remove',
+    'stamp.label': 'DONE',
+    'size.orig': 'Original {0} → result {1}',
+    'size.saved': '(reduced {0}%)',
+    'size.unsaved': '(not smaller)',
+    'zip.label': '{0} files in .zip',
+    'dl.single': 'Download {0}',
+    'dl.zip': 'Download pdf-compressed.zip'
+  }
+};
+var lang = 'id';
+
+function t(key) {
+  var str = i18n[lang] && i18n[lang][key];
+  if (str === undefined) return key;
+  for (var i = 1; i < arguments.length; i++) {
+    str = str.replace('{' + (i - 1) + '}', arguments[i]);
+  }
+  return str;
+}
+
+function setLang(l) {
+  lang = l;
+  document.documentElement.lang = l;
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
+    if (i18n[l] && i18n[l][key] !== undefined) {
+      if (el.tagName === 'OPTION') el.textContent = i18n[l][key];
+      else el.textContent = i18n[l][key];
+    }
+  });
+  document.querySelectorAll('.lang-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-lang') === l);
+  });
+  localStorage.setItem('lang', l);
+  if (typeof refreshFileList === 'function') refreshFileList();
+}
+
+(function() {
+  var saved = localStorage.getItem('lang');
+  if (saved && saved !== 'id') setLang(saved);
+})();
+
+function bytesToSize(bytes) {
+  if (bytes === 0) return '0 B';
+  var u = ['B','KB','MB','GB'];
+  var i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), u.length - 1);
+  return (bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 2) + ' ' + u[i];
+}
+
+function downloadBlob(blob, name) {
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+}
+
+function setStatus(el, text) {
+  el.textContent = text || '';
+  el.classList.toggle('err', false);
+}
+
+function setError(el, text) {
+  el.textContent = text || '';
+  el.classList.toggle('err', true);
+}
+
+function stripExt(name) {
+  var i = name.lastIndexOf('.');
+  return i > 0 ? name.slice(0, i) : name;
+}
+
+function fileKey(f) { return f.name + '_' + f.size + '_' + f.lastModified; }
+
+// --- File list controller ---
+var files = [];
+var listEl = document.getElementById('file-list');
+var runBtn = document.getElementById('run-btn');
+
+function renderList() {
+  listEl.innerHTML = '';
+  files.forEach(function(f, idx) {
+    var li = document.createElement('li');
+    var name = document.createElement('span');
+    name.className = 'fname'; name.textContent = f.name;
+    li.appendChild(name);
+    var size = document.createElement('span');
+    size.className = 'fsize'; size.textContent = bytesToSize(f.size);
+    li.appendChild(size);
+    var up = document.createElement('button');
+    up.className = 'move'; up.type = 'button';
+    up.innerHTML = '&uarr;';
+    up.title = t('btn.up');
+    up.disabled = idx === 0;
+    up.addEventListener('click', function() {
+      var t = files[idx - 1]; files[idx - 1] = files[idx]; files[idx] = t;
+      renderList();
+    });
+    li.appendChild(up);
+    var down = document.createElement('button');
+    down.className = 'move'; down.type = 'button';
+    down.innerHTML = '&darr;';
+    down.title = t('btn.down');
+    down.disabled = idx === files.length - 1;
+    down.addEventListener('click', function() {
+      var t = files[idx + 1]; files[idx + 1] = files[idx]; files[idx] = t;
+      renderList();
+    });
+    li.appendChild(down);
+    var rm = document.createElement('button');
+    rm.type = 'button'; rm.innerHTML = '&times;';
+    rm.title = t('btn.remove');
+    rm.addEventListener('click', function() {
+      files.splice(idx, 1);
+      renderList();
+    });
+    li.appendChild(rm);
+    listEl.appendChild(li);
+  });
+  runBtn.disabled = files.length < 1;
+}
+
+function refreshFileList() {
+  renderList();
+}
+
+// --- Dropzone ---
+var dropEl = document.getElementById('dropzone');
+var inputEl = document.getElementById('file-input');
+
+dropEl.addEventListener('click', function(){ inputEl.click(); });
+dropEl.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputEl.click(); }
+});
+inputEl.addEventListener('change', function() {
+  addFiles(inputEl.files);
+  inputEl.value = '';
+});
+['dragenter','dragover'].forEach(function(ev) {
+  dropEl.addEventListener(ev, function(e) {
+    e.preventDefault(); e.stopPropagation();
+    dropEl.classList.add('dragover');
+  });
+});
+['dragleave','drop'].forEach(function(ev) {
+  dropEl.addEventListener(ev, function(e) {
+    e.preventDefault(); e.stopPropagation();
+    dropEl.classList.remove('dragover');
+  });
+});
+dropEl.addEventListener('drop', function(e) {
+  var dt = e.dataTransfer;
+  if (dt && dt.files && dt.files.length) addFiles(dt.files);
+});
+
+function addFiles(fl) {
+  var seen = {};
+  files.forEach(function(f){ seen[fileKey(f)] = true; });
+  Array.prototype.forEach.call(fl, function(f) {
+    if (!seen[fileKey(f)]) {
+      files.push(f);
+      seen[fileKey(f)] = true;
+    }
+  });
+  renderList();
+}
+
+// --- Compress ---
+var statusEl = document.getElementById('status');
+var resultEl = document.getElementById('result');
+var qualitySel = document.getElementById('quality');
+
+var PRESETS = {
+  high:     { renderScale: 1.0, jpegQuality: 0.35 },
+  balanced: { renderScale: 1.5, jpegQuality: 0.60 },
+  low:      { renderScale: 2.0, jpegQuality: 0.80 }
+};
+
+function stampResult(el, label) {
+  var s = document.createElement('div');
+  s.className = 'stamp';
+  s.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ' + label;
+  el.appendChild(s);
+}
+
+function addDownloadRow(el, blob, filename, note) {
+  var row = document.createElement('div');
+  row.className = 'result-row';
+  var a = document.createElement('a');
+  a.className = 'dl-link';
+  a.href = '#';
+  a.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> ' + t('dl.single', filename);
+  a.addEventListener('click', function(e) {
+    e.preventDefault();
+    downloadBlob(blob, filename);
+  });
+  row.appendChild(a);
+  if (note) {
+    var n = document.createElement('span');
+    n.className = 'size-note'; n.textContent = note;
+    row.appendChild(n);
+  }
+  el.appendChild(row);
+}
+
+async function compressOne(file, preset) {
+  var buf = await file.arrayBuffer();
+  var pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  var doc = null;
+  for (var i = 1; i <= pdf.numPages; i++) {
+    setStatus(statusEl, t('status.progress', file.name, i, pdf.numPages));
+    var page = await pdf.getPage(i);
+    var bv = page.getViewport({ scale: 1 });
+    var rv = page.getViewport({ scale: preset.renderScale });
+    var c = document.createElement('canvas');
+    c.width = rv.width; c.height = rv.height;
+    var ctx = c.getContext('2d');
+    await page.render({ canvasContext: ctx, viewport: rv }).promise;
+    var du = c.toDataURL('image/jpeg', preset.jpegQuality);
+    var ori = bv.width > bv.height ? 'l' : 'p';
+    if (!doc) doc = new jspdf.jsPDF({ orientation: ori, unit: 'pt', format: [bv.width, bv.height] });
+    else doc.addPage([bv.width, bv.height], ori);
+    doc.addImage(du, 'JPEG', 0, 0, bv.width, bv.height);
+  }
+  return doc.output('blob');
+}
+
+runBtn.addEventListener('click', async function() {
+  var fl = files.slice();
+  if (!fl.length) return;
+  runBtn.disabled = true;
+  resultEl.innerHTML = '';
+  var preset = PRESETS[qualitySel.value];
+  try {
+    var outputs = [];
+    for (var i = 0; i < fl.length; i++) {
+      var blob = await compressOne(fl[i], preset);
+      outputs.push({ name: stripExt(fl[i].name) + '-kompres.pdf', blob: blob, originalSize: fl[i].size });
+    }
+    setStatus(statusEl, t('status.done'));
+    stampResult(resultEl, t('stamp.label'));
+
+    if (outputs.length === 1) {
+      var o = outputs[0];
+      var pct = Math.round((1 - o.blob.size / o.originalSize) * 100);
+      var note = t('size.orig', bytesToSize(o.originalSize), bytesToSize(o.blob.size)) + ' ' +
+        (pct > 0 ? t('size.saved', pct) : t('size.unsaved'));
+      addDownloadRow(resultEl, o.blob, o.name, note);
+    } else {
+      var zip = new JSZip();
+      outputs.forEach(function(o){ zip.file(o.name, o.blob); });
+      var zipBlob = await zip.generateAsync({ type: 'blob' });
+      var row = document.createElement('div');
+      row.className = 'result-row';
+      var a = document.createElement('a');
+      a.className = 'dl-link';
+      a.href = '#';
+      a.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> ' + t('dl.zip');
+      a.addEventListener('click', function(e) {
+        e.preventDefault();
+        downloadBlob(zipBlob, 'pdf-terkompresi.zip');
+      });
+      row.appendChild(a);
+      var n = document.createElement('span');
+      n.className = 'size-note'; n.textContent = t('zip.label', outputs.length);
+      row.appendChild(n);
+      resultEl.appendChild(row);
+    }
+  } catch (err) {
+    console.error(err);
+    setError(statusEl, err.message);
+  } finally {
+    runBtn.disabled = false;
+  }
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title data-i18n="page.title">PDF ke Gambar — Meja Dokumen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+
+<header class="site-header">
+  <a href="index.html" class="back-link">&larr; <span data-i18n="site.title">Meja Dokumen</span></a>
+  <div class="lang-toggle">
+    <button class="lang-btn active" data-lang="id" onclick="setLang('id')">ID</button>
+    <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+  </div>
+</header>
+
+<div class="page-title">
+  <h1 data-i18n="tool.title">PDF &rarr; Gambar</h1>
+  <p data-i18n="tool.desc">Ekstrak halaman sebagai PNG.</p>
+</div>
+
+<div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Pilih berkas PDF">
+  <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+  <div class="dz-title" data-i18n="dropzone.text">Seret berkas atau klik untuk memilih</div>
+  <div class="dz-sub" data-i18n="dropzone.sub">Format .pdf</div>
+  <input type="file" id="file-input" accept="application/pdf" multiple>
+</div>
+
+<ul class="file-list" id="file-list"></ul>
+
+<div class="options-row">
+  <div class="field">
+    <label for="scale" data-i18n="scale.label">Resolusi</label>
+    <select id="scale">
+      <option value="1" data-i18n="scale.standard">Standar</option>
+      <option value="2" selected data-i18n="scale.high">Tinggi</option>
+      <option value="3" data-i18n="scale.veryhigh">Sangat tinggi</option>
+    </select>
+  </div>
+  <button class="btn" id="run-btn" disabled data-i18n="btn.action">Ubah ke PNG</button>
+</div>
+
+<div class="status" id="status"></div>
+<div class="result" id="result"></div>
+
+<p class="note" data-i18n="note">Jika hasil lebih dari satu gambar, semua akan dibungkus dalam .zip.</p>
+
+</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <p data-i18n="footer.privacy">Privasi: semua pemrosesan lokal. Data Anda tidak meninggalkan perangkat.</p>
+    <p><a href="index.html" data-i18n="footer.back">&larr; Kembali</a></p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+const i18n = {
+  id: {
+    'site.title': 'Meja Dokumen',
+    'page.title': 'PDF ke Gambar — Meja Dokumen',
+    'tool.title': 'PDF → Gambar',
+    'tool.desc': 'Ekstrak halaman sebagai PNG.',
+    'dropzone.text': 'Seret berkas atau klik untuk memilih',
+    'dropzone.sub': 'Format .pdf',
+    'scale.label': 'Resolusi',
+    'scale.standard': 'Standar',
+    'scale.high': 'Tinggi',
+    'scale.veryhigh': 'Sangat tinggi',
+    'btn.action': 'Ubah ke PNG',
+    'note': 'Jika hasil lebih dari satu gambar, semua akan dibungkus dalam .zip.',
+    'footer.privacy': 'Privasi: semua pemrosesan lokal. Data Anda tidak meninggalkan perangkat.',
+    'footer.back': '← Kembali',
+    'status.progress': 'Merender {0} — halaman {1} dari {2}...',
+    'status.done': 'Selesai.',
+    'btn.up': 'Naik', 'btn.down': 'Turun', 'btn.remove': 'Hapus',
+    'stamp.label': 'SELESAI',
+    'zip.label': '{0} gambar dalam .zip',
+    'dl.single': 'Unduh {0}',
+    'dl.zip': 'Unduh halaman-pdf.zip'
+  },
+  en: {
+    'site.title': 'Document Desk',
+    'page.title': 'PDF to Image — Document Desk',
+    'tool.title': 'PDF → Image',
+    'tool.desc': 'Extract pages as PNG.',
+    'dropzone.text': 'Drop files or click to select',
+    'dropzone.sub': '.pdf format',
+    'scale.label': 'Resolution',
+    'scale.standard': 'Standard',
+    'scale.high': 'High',
+    'scale.veryhigh': 'Very high',
+    'btn.action': 'Convert to PNG',
+    'note': 'If multiple images, all will be bundled in a .zip.',
+    'footer.privacy': 'Privacy: all processing is local. Your data never leaves your device.',
+    'footer.back': '← Back',
+    'status.progress': 'Rendering {0} — page {1} of {2}...',
+    'status.done': 'Done.',
+    'btn.up': 'Up', 'btn.down': 'Down', 'btn.remove': 'Remove',
+    'stamp.label': 'DONE',
+    'zip.label': '{0} images in .zip',
+    'dl.single': 'Download {0}',
+    'dl.zip': 'Download pdf-pages.zip'
+  }
+};
+var lang = 'id';
+
+function t(key) {
+  var str = i18n[lang] && i18n[lang][key];
+  if (str === undefined) return key;
+  for (var i = 1; i < arguments.length; i++) str = str.replace('{' + (i - 1) + '}', arguments[i]);
+  return str;
+}
+function setLang(l) {
+  lang = l; document.documentElement.lang = l;
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
+    if (i18n[l] && i18n[l][key] !== undefined) el.textContent = i18n[l][key];
+  });
+  document.querySelectorAll('.lang-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-lang') === l);
+  });
+  localStorage.setItem('lang', l);
+}
+(function(){ var s = localStorage.getItem('lang'); if (s && s !== 'id') setLang(s); })();
+
+function bytesToSize(bytes) {
+  if (bytes === 0) return '0 B';
+  var u = ['B','KB','MB','GB'];
+  var i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), u.length - 1);
+  return (bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 2) + ' ' + u[i];
+}
+function downloadBlob(blob, name) {
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+}
+function setStatus(el, text) { el.textContent = text || ''; el.classList.toggle('err', false); }
+function setError(el, text) { el.textContent = text || ''; el.classList.toggle('err', true); }
+function stripExt(name) { var i = name.lastIndexOf('.'); return i > 0 ? name.slice(0, i) : name; }
+function fileKey(f) { return f.name + '_' + f.size + '_' + f.lastModified; }
+
+var files = [], listEl = document.getElementById('file-list'), runBtn = document.getElementById('run-btn');
+function renderList() {
+  listEl.innerHTML = '';
+  files.forEach(function(f, idx) {
+    var li = document.createElement('li');
+    var n = document.createElement('span'); n.className = 'fname'; n.textContent = f.name; li.appendChild(n);
+    var s = document.createElement('span'); s.className = 'fsize'; s.textContent = bytesToSize(f.size); li.appendChild(s);
+    var up = document.createElement('button'); up.className = 'move'; up.type = 'button'; up.innerHTML = '&uarr;'; up.disabled = idx === 0;
+    up.addEventListener('click', function(){ var t = files[idx-1]; files[idx-1] = files[idx]; files[idx] = t; renderList(); });
+    li.appendChild(up);
+    var dn = document.createElement('button'); dn.className = 'move'; dn.type = 'button'; dn.innerHTML = '&darr;'; dn.disabled = idx === files.length - 1;
+    dn.addEventListener('click', function(){ var t = files[idx+1]; files[idx+1] = files[idx]; files[idx] = t; renderList(); });
+    li.appendChild(dn);
+    var rm = document.createElement('button'); rm.type = 'button'; rm.innerHTML = '&times;';
+    rm.addEventListener('click', function(){ files.splice(idx, 1); renderList(); });
+    li.appendChild(rm);
+    listEl.appendChild(li);
+  });
+  runBtn.disabled = files.length < 1;
+}
+
+var dropEl = document.getElementById('dropzone'), inputEl = document.getElementById('file-input');
+dropEl.addEventListener('click', function(){ inputEl.click(); });
+dropEl.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputEl.click(); } });
+inputEl.addEventListener('change', function() { addFiles(inputEl.files); inputEl.value = ''; });
+['dragenter','dragover'].forEach(function(ev) { dropEl.addEventListener(ev, function(e) { e.preventDefault(); e.stopPropagation(); dropEl.classList.add('dragover'); }); });
+['dragleave','drop'].forEach(function(ev) { dropEl.addEventListener(ev, function(e) { e.preventDefault(); e.stopPropagation(); dropEl.classList.remove('dragover'); }); });
+dropEl.addEventListener('drop', function(e) { var dt = e.dataTransfer; if (dt && dt.files && dt.files.length) addFiles(dt.files); });
+
+function addFiles(fl) {
+  var seen = {}; files.forEach(function(f){ seen[fileKey(f)] = true; });
+  Array.prototype.forEach.call(fl, function(f) { if (!seen[fileKey(f)]) { files.push(f); seen[fileKey(f)] = true; } });
+  renderList();
+}
+
+var statusEl = document.getElementById('status'), resultEl = document.getElementById('result');
+var scaleSel = document.getElementById('scale');
+
+async function renderOne(file, scale, zip, holder) {
+  var buf = await file.arrayBuffer();
+  var pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  var base = stripExt(file.name);
+  for (var i = 1; i <= pdf.numPages; i++) {
+    setStatus(statusEl, t('status.progress', file.name, i, pdf.numPages));
+    var page = await pdf.getPage(i);
+    var vp = page.getViewport({ scale: scale });
+    var c = document.createElement('canvas');
+    c.width = vp.width; c.height = vp.height;
+    var ctx = c.getContext('2d');
+    await page.render({ canvasContext: ctx, viewport: vp }).promise;
+    var pngBlob = await new Promise(function(res){ c.toBlob(res, 'image/png'); });
+    var name = pdf.numPages > 1 ? base + '-hal-' + i + '.png' : base + '.png';
+    zip.file(name, pngBlob);
+    holder.count++;
+    holder.last = { name: name, blob: pngBlob };
+  }
+}
+
+runBtn.addEventListener('click', async function() {
+  var fl = files.slice();
+  if (!fl.length) return;
+  runBtn.disabled = true;
+  resultEl.innerHTML = '';
+  var scale = parseFloat(scaleSel.value);
+  try {
+    var zip = new JSZip();
+    var holder = { count: 0, last: null };
+    for (var i = 0; i < fl.length; i++) {
+      await renderOne(fl[i], scale, zip, holder);
+    }
+    setStatus(statusEl, t('status.done'));
+    var s = document.createElement('div'); s.className = 'stamp';
+    s.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ' + t('stamp.label');
+    resultEl.appendChild(s);
+    if (holder.count === 1) {
+      var a = document.createElement('a'); a.className = 'dl-link'; a.href = '#';
+      a.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> ' + t('dl.single', holder.last.name);
+      a.addEventListener('click', function(e){ e.preventDefault(); downloadBlob(holder.last.blob, holder.last.name); });
+      resultEl.appendChild(a);
+    } else {
+      var zipBlob = await zip.generateAsync({ type: 'blob' });
+      var a = document.createElement('a'); a.className = 'dl-link'; a.href = '#';
+      a.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> ' + t('dl.zip');
+      a.addEventListener('click', function(e){ e.preventDefault(); downloadBlob(zipBlob, 'halaman-pdf.zip'); });
+      resultEl.appendChild(a);
+      var n = document.createElement('span'); n.className = 'size-note'; n.textContent = t('zip.label', holder.count);
+      resultEl.appendChild(n);
+    }
+  } catch (err) { console.error(err); setError(statusEl, err.message); }
+  finally { runBtn.disabled = false; }
+});
+</script>
+</body>
+</html>
